@@ -5,7 +5,7 @@ from sqlalchemy.orm import DeclarativeBase,Mapped,mapped_column
 from sqlalchemy import Column, Integer, String, DateTime, select,text
 from contextlib import asynccontextmanager
 from datetime import datetime
-from .routers import news_router
+from .routers import news
 # conda activate fastapi_env 激活环境
 
 ADMIN_DATABASE_URL = "mysql+aiomysql://root:123456@localhost:3306/mysql"
@@ -60,9 +60,9 @@ async def lifespan(app: FastAPI):
     # 关闭
     await close_db()
        
-app = FastAPI(title="我的 FastAPI 项目", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="新闻平台项目", version="1.0.0", lifespan=lifespan)
 
-app.include_router(news_router)
+app.include_router(news.router)
 
 
 @app.get("/")

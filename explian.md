@@ -49,3 +49,37 @@ result.scalars():
 ## .all()
 
 所有结果变成 Python 列表,全部返回
+
+## git
+
+git的提交方式有很多，例如直接用vscode自带的源码管理就能提交上去，还是写一下命令吧，免得自己又忘
+```
+git init    #创git环境
+git add .   #导文件
+git commit -m "text"
+git remote add origin https://github.com/username/project.git#push远程仓库
+git branch -M main
+git push -u origin main
+
+```
+
+## 创建虚拟环境
+
+先说venv环境的创建吧，简单。
+
+```
+python -m venv venv     # 在项目后端根目录创建
+.venv/bin/activate
+pip install -r requirements.txt
+deactivate
+```
+
+## 我目前希望后期弄懂的功能？
+
+### day1
+
+**前端中之前老师说的路由守卫是什么？怎么做？**  
+**后端和前端怎样联动好跑通?(只有分开开发的经验)**  
+**后端使用postman测试接口，如何使用？**  
+慢慢来，不急，今天先把自己路由跑通再说
+---

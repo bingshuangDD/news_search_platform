@@ -1,0 +1,3 @@
+第 8 行改为：
+from .routers import news
+原因：main.py 在 app/ 包内部，被加载为 app.main。from routers import news 会去 Python 顶层搜索 routers 模块，找不到。正确写法是 from .routers（相对导入，即"从当前 app 包下的 routers 子模块导入"）。

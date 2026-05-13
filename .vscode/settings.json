@@ -1,6 +1,4 @@
 {
-  "python.defaultInterpreterPath": "C:\\Users\\hp\\.conda\\envs\\fastapi_env\\python.exe",
-  "python.terminal.activateEnvironment": true,
-  "editor.formatOnSave": true,
-  "python.analysis.typeCheckingMode": "basic"
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/Scripts/python.exe",
+  "python.terminal.activateEnvInCurrentTerminal": true
 }
