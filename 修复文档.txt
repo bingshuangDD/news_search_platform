@@ -1,3 +1,18 @@
+day1
 第 8 行改为：
 from .routers import news
 原因：main.py 在 app/ 包内部，被加载为 app.main。from routers import news 会去 Python 顶层搜索 routers 模块，找不到。正确写法是 from .routers（相对导入，即"从当前 app 包下的 routers 子模块导入"）。
+
+day2
+一.由于之前代码是建表的，因此database重组了文件结构，导致数据库文件丢失。
+解决方案：
+1. 删除数据库文件
+2. 运行数据库初始化脚本
+3. 运行数据库迁移脚本
+DROP DATABASE IF EXISTS news_app;
+SET NAMES utf8mb4;
+source d:/Fastapi+Vue-新闻头条项目/backend/db/init.sql
+
+二.因为base基类导致的错误。
+之前我的creat_time是基于建表的基础上得到的，而实际的database中并不存在creat_time字段。
+因此对原先的学习代码进行修改，使其在其他任何代码继承base基类时生成的创建时间字段和数据库中的字段相符
