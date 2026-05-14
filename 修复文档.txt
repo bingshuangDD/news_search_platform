@@ -27,3 +27,5 @@ day3
 一.get_category函数中 news_list已经返回了result.scalars().all()了，因此data不需要再带一个中括号。
 这个问题导致前端的api接口拿到json包的时候多了一个中括号。导致只能读取出其中的一个元素。
 
+二.在查询新闻列表的接口函数中把offset换成page传进去，之前误用了page作为参数，导致查询结果一直重复。
+
