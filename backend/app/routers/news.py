@@ -15,11 +15,5 @@ async def get_category(skip: int = 0, limit: int = 100,db: AsyncSession = Depend
     return {
         "code": 200,
         "message": "获取分类成功",
-        "data": [
-            categories
-        ]
+        "data": categories
 }
-
-@router.get("/{id}")
-async def get_news(id: int):
-    return {"msg": "获取新闻成功"}
