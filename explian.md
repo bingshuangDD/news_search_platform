@@ -94,7 +94,37 @@ deactivate
 | `func.count(news.News.id)` | SQL 的 `COUNT(news.id)`，计数函数        |
 | `.where(...)`    | SQL 的 `WHERE category_id = ?` 过滤条件 |
 
+### 抛出异常为什么用HTTPexception不用return code 404?
+结论：可以用，但是最好是方法是抛出HTTPException
+为什么 HTTPException 更好
+1. HTTP 语义正确  
+404 应该体现在 HTTP 状态码 上，不是响应体里的一个字段  
+客户端可以通过  response.status_code != 200  直接判断失败，无需解析 JSON  
+2. 文档自动生成
+Swagger/OpenAPI 会显示 404 响应模型  
+return方式文档里看不到错误情况  
+只有一种情况使用：就是公司强制要求抛出的错误需为code 404。
 
+###为什么 and 在 where() 里不工作？
+
+```
+# ❌ 错误：Python 会先算 news.News.id != news_id
+# 结果是 True/False，然后 SQLAlchemy 拿到的是：
+# where(False and <Column对象>) → 变成 where(False)，完全不是你要的 SQL
+.where(news.News.id != news_id and news.News.category_id == categoryid)
+
+# ✅ 正确：逗号分隔，SQLAlchemy 自动转成 SQL 的 AND
+.where(
+    news.News.id != news_id,
+    news.News.category_id == categoryid
+)
+
+# ✅ 也正确：显式用 and_()
+.where(
+    and_(news.News.id != news_id, news.News.category_id == categoryid)
+)
+
+```
 
 ## 我目前希望后期弄懂的功能？
 

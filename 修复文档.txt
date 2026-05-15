@@ -29,3 +29,38 @@ day3
 
 二.在查询新闻列表的接口函数中把offset换成page传进去，之前误用了page作为参数，导致查询结果一直重复。
 
+
+day4.
+一.
+一个接口ide显示错误但是实际能用的问题
+async def increase_news_views(db: AsyncSession, news_id:int):
+  stmt=update(news.News).where(news.News.id==news_id).values(views=news.News.views+1)
+  result=await db.execute(stmt)
+  await db.commit()
+  return result.rowcount>0
+显示无法访问类“Result[Any]”的属性“rowcount”
+  属性“rowcount”未知
+在 SQLAlchemy 2.0 的异步模式下， await db.execute(stmt)
+返回的是Result对象，但该对象的  rowcount  属性访问存在类型提示问题。
+实际上  rowcount  是存在的，但 Pylance 的类型推断认为它不存在。
+因此对原先的学习代码进行修改，用更符合sqlalchemy 2.0 的语法来进行编写
+好，现在我想错了，如果我使用了returing语句，那么出现的错误则是internetional error.
+因为MySQL 不支持 UPDATE 语句的 RETURNING 子句
+因此用回原方法
+
+二.对于推荐新闻的获取问题
+如果我想返回的时候只带一些东西（例如：id，title），而不是返回所有的字段）
+两种方法筛选：
+一种是列表推导式（先scalars.all后再[{}]筛选）-->也就是代码中的方案
+一种是带参数的select
+例如：stmt = (
+        select(
+            news.News.id,
+            news.News.title,
+            news.News.views
+        )
+        .where(...)  
+        .order_by(...)
+        .limit(10)
+    )
+运行效率上后者会高，但是执行方案以及对短limit 的查询上差距不大，所以就维持原样
