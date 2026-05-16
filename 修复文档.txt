@@ -64,3 +64,26 @@ async def increase_news_views(db: AsyncSession, news_id:int):
         .limit(10)
     )
 运行效率上后者会高，但是执行方案以及对短limit 的查询上差距不大，所以就维持原样
+
+
+day5.
+一.关于import导入的问题
+我尝试了使用完整的backend的路径进行对象的导入，但是没有成功。
+ File "D:\Fastapi+Vue-新闻头条项目\backend\app\crud\users.py", line 4, in <module>
+    from backend.app.schemas.users import UserRequest
+而改为使用相对导入，即from ..schemas.users import UserRequest，就可以成功。
+为什么？
+因为在项目结构中，backend根本不在python的搜索路径中，即这只是一个文件夹而不是一个python包。、
+（__init__.py是和app同级的）
+
+二.关于哈希密码的问题
+我们报了这个错： File "D:\Fastapi+Vue-新闻头条项目\backend\app\utils\security.py", line 7, in get_hash_password
+    return pwd_context.hash(password)
+为什么？因为bcrypt 限制密码长度不能超过 72 字节。
+我有两个地方没搞懂。第一，我在swagger文档里面只是try了"username": "nagger",
+  "password": "123456"，怎么看都没超限，为什么会到bcrypt的阈值？
+第二，哈希加密应该不会将短字节的字符串膨胀到60以上？
+原因是bcrypt 5.0.0 与 passlib 1.7.4 不兼容。
+你的密码 "123456" 完全没问题。真正出问题的是 passlib 内部的 detect_wrap_bug 函数——它在初始化 bcrypt 后端时用了一个恰好 72 字节的测试值，而 bcrypt 5.x 对这个测试值直接抛出了 ValueError。
+因此我们不用passlib，而单独用bcrypt
+tips:这个真排不出来，看社区完然后问了嘴ai才知道，如果后面碰到这种且没教程的错误，就保守点sha256吧

@@ -68,3 +68,7 @@ async def get_news_detail(news_id:int=Query(...,alias="id"),db: AsyncSession = D
             "relatedNews": related_news
         }
 }
+    
+
+'''以上为新闻获取模块'''
+

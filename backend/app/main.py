@@ -12,7 +12,8 @@ from .config.database import (
     close_db,
     get_db,
 )
-from .routers import news
+from .schemas import users
+from .routers import news,users
 
 
 app = FastAPI(title="新闻平台项目", version="1.0.0")
@@ -24,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],    # 允许的请求头
 )
 app.include_router(news.router)
-
+app.include_router(users.router)
 
 # ---------- 基础路由 ----------
 @app.get("/")

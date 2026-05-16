@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import func, select, update
 from ..models import news
-
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 async def get_category(db: AsyncSession, skip: int = 0, limit: int = 100):
   stmt = select(news.Category).offset(skip).limit(limit)
@@ -27,8 +28,7 @@ async def get_news_detail(db: AsyncSession, news_id:int):
   news_detail = result.scalar_one_or_none()
   return news_detail
 
-from sqlalchemy import update
-from sqlalchemy.ext.asyncio import AsyncSession
+
 
 async def increase_news_views(db: AsyncSession, news_id: int) -> bool:
     stmt = (
