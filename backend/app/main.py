@@ -14,9 +14,12 @@ from .config.database import (
 )
 from .schemas import users
 from .routers import news,users
-
+from .utils.exception_handler import register_exception
 
 app = FastAPI(title="新闻平台项目", version="1.0.0")
+
+register_exception(app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],    #允许的源，开发中，后面实战不能这样写，
