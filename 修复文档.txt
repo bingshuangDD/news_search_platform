@@ -87,3 +87,10 @@ day5.
 你的密码 "123456" 完全没问题。真正出问题的是 passlib 内部的 detect_wrap_bug 函数——它在初始化 bcrypt 后端时用了一个恰好 72 字节的测试值，而 bcrypt 5.x 对这个测试值直接抛出了 ValueError。
 因此我们不用passlib，而单独用bcrypt
 tips:这个真排不出来，看社区完然后问了嘴ai才知道，如果后面碰到这种且没教程的错误，就保守点sha256吧
+
+day6 
+一.INFO:   
+  127.0.0.1:52425 - "PUT /api/user/password HTTP/1.1" 422 Unprocessable Content
+  这是非常典型的422错误，因为请求体中缺少了必须的参数。
+  一般也是前后端耦合其中一端没看规范接口文档的问题（例如前端在这个函数里面是返回的newPassword，但是后端alias写成了newpassword）
+  一定要规范大小写！

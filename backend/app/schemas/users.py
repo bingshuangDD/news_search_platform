@@ -32,3 +32,16 @@ class UserAuthResponse(BaseModel):
         populate_by_name=True,  # 通过字段名填充数据（alias字段名兼容）
         from_attributes=True    # 通过orm_attributes字段填充数据(允许从orm对象中取值)
     )
+    
+
+class UserUpdateRequest(BaseModel):
+    nickname: Optional[str]=Field(None,max_length=50,description="昵称")
+    avatar: Optional[str]=Field(None,max_length=255,description="头像URL")
+    gender: Optional[str]=Field(None,max_length=10,description="性别")
+    bio: Optional[str]=Field(None,max_length=500,description="个人简介")
+    phone: Optional[str]=Field(None,max_length=20,description="手机号")
+
+
+class UserChangePasswordRequest(BaseModel):
+    old_password: str=Field(...,alias="oldPassword",description="旧密码")
+    new_password: str=Field(...,min_length=6,alias="newPassword",description="新密码")
