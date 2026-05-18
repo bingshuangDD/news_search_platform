@@ -170,6 +170,83 @@ Token机制：
 （例如前端在这个函数里面是返回的newPassword，但是后端alias写成了newpassword）   
  **一定要规范大小写！**
 
+## Schemas 类和 Model 类的区别
+
+### 一句话区别
+
+| 概念 | 一句话 |
+|:--|:--|
+| **Model**（SQLAlchemy） | 和数据库表一一对应，只管"数据怎么存" |
+| **Schema**（Pydantic） | 和 API 请求/响应一一对应，只管"数据怎么传" |
+
+---
+
+### 具体对比（以 User 为例）
+
+#### Model — `models/user.py`（SQLAlchemy ORM）
+
+```python
+class User(Base):
+    __tablename__ = 'user'  # 映射到数据库的 user 表
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, ...)
+    username: Mapped[str] = mapped_column(String(50), unique=True, ...)
+    password: Mapped[str] = mapped_column(String(255), ...)
+    # ...
+```
+
+- 定义了 `__tablename__`、字段类型映射、索引、约束
+- `password` 在这里 — 因为数据库要存密码
+- **关注点：数据库结构、关系、索引**
+
+#### Schema — `schemas/user.py`（Pydantic BaseModel）
+
+```python
+class UserRequest(BaseModel):       # 登录/注册时接收的请求体
+    username: str
+    password: str
+
+class UserInfoResponse(BaseModel):  # 返回给前端的用户信息
+    id: int
+    username: str
+    nickname: Optional[str] = None
+    # 注意：没有 password 字段！
+```
+
+- 定义了请求/响应的"形状"
+- `password` 不出现在 `UserInfoResponse` 里 — 敏感数据绝不返回给前端
+- `from_attributes=True` 让 Pydantic 可以直接从 ORM 对象"读取"数据
+- `alias` 做字段名映射（Python 用 `snake_case`，发给前端转 `camelCase`）
+- **关注点：API 输入输出的数据校验与序列化**
+
+---
+
+### 关键区别表
+
+| 维度 | Model（SQLAlchemy） | Schema（Pydantic） |
+|:--|:--|:--|
+| 用途 | 描述数据库表结构 | 描述 API 的输入/输出 |
+| 面向谁 | 数据库 | 前端 / API 调用方 |
+| 包含密码？ | 包含 | `UserInfoResponse` 不含 |
+| 包含表关系？ | 有 `ForeignKey`、`relationship` | 没有 |
+| 字段名风格 | Python `snake_case` | 通过 `alias` 转为 `camelCase` |
+| 同一个表可以有... | 1 个 Model | 多个 Schema（Request / Response / 不同场景） |
+
+---
+
+### 为什么需要两个？
+
+同一个 `User` 数据库记录，不同场景需要不同的字段集合：
+
+| 场景 | 需要的字段 |
+|:--|:--|
+| 注册请求 | `username` + `password` |
+| 个人信息响应 | `id`, `username`, `nickname`, `avatar`...（不含密码） |
+| 修改密码请求 | `old_password` + `new_password` |
+
+如果只用一个 Model，你就没法区分"哪些字段该返回、哪些字段该隐藏、哪些字段是这个接口特有的"。
+
+> **核心思想：Model 定义全貌（数据库长什么样），Schema 定义接口的"窗口"（前端能看到什么）。**
 
 ## 我目前希望后期弄懂的功能？
 

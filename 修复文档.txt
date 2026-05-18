@@ -1,5 +1,5 @@
 day1
-第 8 行改为：
+有关路由导包的问题
 from .routers import news
 原因：main.py 在 app/ 包内部，被加载为 app.main。from routers import news 会去 Python 顶层搜索 routers 模块，找不到。正确写法是 from .routers（相对导入，即"从当前 app 包下的 routers 子模块导入"）。
 
@@ -94,3 +94,16 @@ day6
   这是非常典型的422错误，因为请求体中缺少了必须的参数。
   一般也是前后端耦合其中一端没看规范接口文档的问题（例如前端在这个函数里面是返回的newPassword，但是后端alias写成了newpassword）
   一定要规范大小写！
+
+Day7.
+很蠢的错误
+在favorite的base基类中多定义了一个数据，导致在await的时候找不到这个数据，导致报错。。
+并且由于之前写了全局错误抛出的函数，因此没有提示错误（这玩意是在swaggerUI里面提示的，自己给自己踩坑这块...）
+
+2.外键的问题
+在model类中跨文件外键引用引发的错误：
+sqlalchemy.exc.NoReferencedTableError: Foreign key associated with column 'favorite.user_id' could not find table 'User' with which to generate a foreign key to target column 'id'
+解决方案：统一 Base — 所有模型共用一个 DeclarativeBase 实例
+统一 import — 在 __init__.py 中导入所有模型，确保启动时全部注册
+并且外键用表名而非类名：ForeignKey('user.id') 中的 'user' 对应 User.__tablename__，不是类名
+挺晕头的

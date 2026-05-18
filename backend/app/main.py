@@ -13,12 +13,12 @@ from .config.database import (
     get_db,
 )
 from .schemas import users
-from .routers import news,users
+from .routers import news,users,favorite
 from .utils.exception_handler import register_exception
 
 app = FastAPI(title="新闻平台项目", version="1.0.0")
 
-register_exception(app)
+# register_exception(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,6 +29,7 @@ app.add_middleware(
 )
 app.include_router(news.router)
 app.include_router(users.router)
+app.include_router(favorite.router)
 
 # ---------- 基础路由 ----------
 @app.get("/")
