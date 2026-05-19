@@ -2,37 +2,28 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 from .base import NewsItemBase
-class FavoriteCheckResponse(BaseModel):
-    is_favorite:bool = Field(...,alias="isFavorite")
+
+class HistoryCheckResponse(BaseModel):
+    is_history:bool = Field(...,alias="isHistory")
     
-class FavoriteAddResponse(BaseModel):
-    news_id:int = Field(...,alias="newsId")
+class HistoryAddResponse(BaseModel):
+  news_id:int = Field(...,alias="newsId")
 
-#新闻类
-
-#模型类
-
-class FavoriteNewsItemRespones(NewsItemBase):
-    favorite_id:int = Field(...,alias="favoriteId")
-    favorite_time:datetime = Field(...,alias="favoriteTime")
+class HistoryNewsItemRespones(NewsItemBase):
+    history_id:int = Field(...,alias="historyId")
+    view_time:datetime = Field(...,alias="viewTime")
     
     model_config =ConfigDict(
         populate_by_name=True,  # 通过字段名填充数据（alias字段名兼容）
         from_attributes=True    # 通过orm_attributes字段填充数据(允许从orm对象中取值)
     )
-    
 
-#收藏列表响应模型类
-
-class FavoriteListResponse(BaseModel):
-    list:list[FavoriteNewsItemRespones]
-    total:int
+class HistoryListResponse(BaseModel):
+    hasmore:bool = Field(...,alias="hasMore")
+    list:list[HistoryNewsItemRespones]
+    total: int 
     hasmore:bool = Field(...,alias="hasMore")
     model_config =ConfigDict(
         populate_by_name=True,  # 通过字段名填充数据（alias字段名兼容）
         from_attributes=True    # 通过orm_attributes字段填充数据(允许从orm对象中取值)
     )
-    
-    
-
-    
