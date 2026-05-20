@@ -13,7 +13,7 @@ from .config.database import (
     get_db,
 )
 from .schemas import users
-from .routers import news,users,favorite,history
+from .routers import news,users,favorite,history,ai
 from .utils.exception_handler import register_exception
 
 app = FastAPI(title="新闻平台项目", version="1.0.0")
@@ -31,6 +31,7 @@ app.include_router(news.router)
 app.include_router(users.router)
 app.include_router(favorite.router)
 app.include_router(history.router)
+app.include_router(ai.router)
 # ---------- 基础路由 ----------
 @app.get("/")
 async def root():

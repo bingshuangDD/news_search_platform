@@ -10,12 +10,12 @@ export const apiConfig = {
 }
 
 export const aiChatConfig = {
-  // OpenAI API地址
-  apiEndpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-  
-  // API Key (由开发人员指定)
-  apiKey: 'sk-9c4d89982a6a4bd3b7494d94751fe81c',
-  
+  // 请求自己的后端，由后端代理转发到 AI 服务商
+  apiEndpoint: 'http://127.0.0.1:8000/api/ai/chat',
+
+  // API Key 由后端管理，前端不持有
+  apiKey: '',
+
   // 使用的模型
-  model: 'qwen3-max-preview'
+  model: 'kimi-k2.6'
 }

@@ -22,15 +22,15 @@ async def check_history(news_id:int=Query(...,alias="newsId"),user:User=Depends(
   # 以上代码无用
   
 @router.post("/add")
-async def add_history(news_id:int=Query(...,alias="newsId"),user:User=Depends(get_current_user),
+async def add_history(data:HistoryAddResponse,user:User=Depends(get_current_user),
                          db: AsyncSession = Depends(get_db)):
-    result=await add_news_history(user.id,news_id,db)
+    result=await add_news_history(user.id,data.news_id,db)
     return success_response(message="添加历史记录成功",data=HistoryCheckResponse(isHistory=result))
 
-@router.get("/delete/{history_id}")
-async def remove_history(news_id:int=Query(...,alias="newsId"),user:User=Depends(get_current_user),
+@router.delete("/delete/{history_id}")
+async def remove_history(history_id:int ,user:User=Depends(get_current_user),
                          db: AsyncSession = Depends(get_db)):
-    result=await remove_news_history(user.id,news_id,db)
+    result=await remove_news_history(user.id,history_id,db)
     if not result:
         raise HTTPException(status_code=400,detail="删除历史记录失败")
     return success_response(message="删除历史记录成功",data=result)

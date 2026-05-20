@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import delete, func, select
 
@@ -7,17 +9,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.users import User
 from ..models.history import History
 
+
 async def crud_check_history(user_id:int,news_id:int,db: AsyncSession = Depends(get_db)):
-  query = select(History).where(History.user_id==user_id,History.news_id==news_id)
+  query = select(History.id).where(History.user_id==user_id,History.news_id==news_id).limit(1)
   result = await db.execute(query)
-  return result.scalar_one_or_none() is not None
+  return result.scalar() is not None
 
 async def add_news_history( user_id:int,news_id:int,db: AsyncSession = Depends(get_db)):
-  data=History(user_id=user_id,news_id=news_id)
-  db.add(data)
-  await db.commit()
-  await db.refresh(data)
-  return await crud_check_history(user_id,news_id,db)
+  query = select(History).where(History.user_id==user_id, History.news_id==news_id).limit(1)
+  result = await db.execute(query)
+  existing = result.scalar()
+  if existing:
+    existing.view_time = datetime.now()
+    await db.commit()
+    await db.refresh(existing)
+  else:
+    data = History(user_id=user_id, news_id=news_id)
+    db.add(data)
+    await db.commit()
+    await db.refresh(data)
+  return True
 
 async def remove_news_history( user_id:int,news_id:int,db: AsyncSession = Depends(get_db)):
   stmt = delete(History).where(History.user_id==user_id,History.news_id==news_id)
