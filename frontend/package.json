@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "chmod +x node_modules/.bin/vite && vite build",
+    "build": "vite build",
     "dev": "vite",
     "preview": "vite preview"
   },
@@ -19,6 +19,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@rolldown/pluginutils": "^1.0.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "vite": "^7.1.6"
   }
