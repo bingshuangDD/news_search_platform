@@ -4,18 +4,19 @@ from typing import Any
 
 import redis.asyncio as redis
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+# 优先用 Railway 自动注入的 REDIS_URL，本地开发用独立变量
+REDIS_URL = os.getenv("REDIS_URL", "")
 
-
-
-redis_client = redis.Redis(
-  host=REDIS_HOST,  #主机地址
-  port=REDIS_PORT, #端口号
-  db=0, #redis数据库编号
-  decode_responses=True #字节数据解码为字符串
-  )
+if REDIS_URL:
+    redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+else:
+    redis_client = redis.Redis(
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=int(os.getenv("REDIS_PORT", "6379")),
+        password=os.getenv("REDIS_PASSWORD", None),
+        db=0,
+        decode_responses=True,
+    )
 
 #设置/读取缓存的方法
 
