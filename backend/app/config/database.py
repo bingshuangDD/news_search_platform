@@ -3,11 +3,17 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import DateTime, text
 from datetime import datetime
 
-# 用于创建数据库的管理员连接
-ADMIN_DATABASE_URL = "mysql+aiomysql://root:123456@localhost:3306/mysql"
 
+import os
+
+ASYNC_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+aiomysql://root:123456@localhost:3306/news_app?charset=utf8"
+)
+
+# 用于创建数据库的管理员连接
 # 项目数据库连接
-ASYNC_DATABASE_URL = "mysql+aiomysql://root:123456@localhost:3306/news_app?charset=utf8"
+
 
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,
