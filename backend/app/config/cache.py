@@ -41,7 +41,7 @@ async def get_json_cache(key:str):
     return None
   
 async def set_cache(key:str,value: Any ,expire:int=3600):
-  """设置缓存""" 
+  """设置缓存"""
   try:
     if isinstance(value,dict):
       value = json.dumps(value, ensure_ascii=False) #保存中文
@@ -52,3 +52,34 @@ async def set_cache(key:str,value: Any ,expire:int=3600):
   except Exception as e:
     print(f"设置缓存失败:{e}")
     return None
+
+
+# ──────────────────────────────────────
+# 互斥锁（防止缓存击穿）—— 基于 utils/redis_mutex.py
+# ──────────────────────────────────────
+from ..utils.redis_mutex import get_cache_with_mutex as _get_cache_with_mutex
+
+
+async def get_cache_with_mutex(
+    cache_key: str,
+    fetch_func,          # async callable: 查数据库的回调
+    expire: int = 3600,
+):
+    """
+    带互斥锁的缓存读取（便捷封装，自动绑定本模块的 redis_client / get_json_cache / set_cache）
+
+    用法:
+        data = await get_cache_with_mutex(
+            cache_key="news:categories",
+            fetch_func=my_db_query,
+            expire=7200,
+        )
+    """
+    return await _get_cache_with_mutex(
+        redis_client=redis_client,
+        cache_read=get_json_cache,
+        cache_write=set_cache,
+        cache_key=cache_key,
+        fetch_func=fetch_func,
+        expire=expire,
+    )

@@ -1,0 +1,201 @@
+
+
+(venv) D:\Fastapi+Vue-新闻头条项目>docker run --rm williamyeh/hey -n 10000 -c 1000 http://host.docker.internal:8000/health
+
+Summary:
+  Total:        5.2574 secs
+  Slowest:      1.0969 secs
+  Fastest:      0.0463 secs
+  Average:      0.5028 secs
+  Requests/sec: 1902.0661
+  
+  Total data:   190060 bytes
+  Size/request: 20 bytes
+
+Response time histogram:
+  0.046 [1]     |
+  0.151 [108]   |■
+  0.256 [288]   |■■
+  0.361 [688]   |■■■■
+  0.467 [560]   |■■■
+  0.572 [6603]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.677 [716]   |■■■■
+  0.782 [245]   |■
+  0.887 [48]    |
+  0.992 [207]   |■
+  1.097 [39]    |
+
+
+Latency distribution:
+  10% in 0.3425 secs
+  25% in 0.4896 secs
+  50% in 0.5070 secs
+  75% in 0.5349 secs
+  90% in 0.5760 secs
+  95% in 0.7240 secs
+  99% in 0.9487 secs
+
+Details (average, fastest, slowest):
+  DNS+dialup:   0.0027 secs, 0.0463 secs, 1.0969 secs
+  DNS-lookup:   0.0082 secs, 0.0000 secs, 0.1251 secs
+  req write:    0.0007 secs, 0.0000 secs, 0.1129 secs
+  resp wait:    0.4787 secs, 0.0025 secs, 0.9670 secs
+  resp read:    0.0002 secs, 0.0000 secs, 0.0735 secs
+
+Status code distribution:
+  [200] 9503 responses
+
+Error distribution:
+  [497] Get http://host.docker.internal:8000/health: dial tcp 192.168.65.254:8000: connect: connection refused
+
+
+(venv) D:\Fastapi+Vue-新闻头条项目>docker run --rm williamyeh/hey -n 10000 -c 100 -m POST ^                                      
+More?   -H "Content-Type: application/json" ^
+More?   -d "{\"username\":\"test\",\"password\":\"123456\"}" ^
+More?   http://host.docker.internal:8000/api/user/login
+
+Summary:
+  Total:        24.1391 secs
+  Slowest:      1.2861 secs
+  Fastest:      0.0035 secs
+  Average:      0.2282 secs
+  Requests/sec: 414.2649
+  
+  Total data:   370000 bytes
+  Size/request: 37 bytes
+
+Response time histogram:
+  0.003 [1]     |
+  0.132 [3060]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.260 [4577]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.388 [1715]  |■■■■■■■■■■■■■■■
+  0.517 [482]   |■■■■
+  0.645 [120]   |■
+  0.773 [30]    |
+  0.901 [11]    |
+  1.030 [1]     |
+  1.158 [1]     |
+  1.286 [2]     |
+
+
+Latency distribution:
+  10% in 0.1075 secs
+  25% in 0.1213 secs
+  50% in 0.2356 secs
+  75% in 0.2575 secs
+  90% in 0.3640 secs
+  95% in 0.4420 secs
+  99% in 0.5891 secs
+
+Details (average, fastest, slowest):
+  DNS+dialup:   0.0003 secs, 0.0035 secs, 1.2861 secs
+  DNS-lookup:   0.0001 secs, 0.0000 secs, 0.0332 secs
+  req write:    0.0000 secs, 0.0000 secs, 0.0019 secs
+  resp wait:    0.2278 secs, 0.0034 secs, 1.2856 secs
+  resp read:    0.0001 secs, 0.0000 secs, 0.0018 secs
+
+Status code distribution:
+  [401] 10000 responses
+
+
+
+
+(venv) D:\Fastapi+Vue-新闻头条项目>
+(venv) D:\Fastapi+Vue-新闻头条项目>docker network ls                                        
+NETWORK ID     NAME      DRIVER    SCOPE
+71c231893bc2   bridge    bridge    local
+4321efa363e2   host      host      local
+9714cdccdac0   none      null      local
+
+(venv) D:\Fastapi+Vue-新闻头条项目>docker run --rm williamyeh/hey -n 5000 -c 200 http://host.docker.internal:8000/api/news/categories
+
+Summary:
+  Total:        6.2418 secs
+  Slowest:      1.0995 secs
+  Fastest:      0.0045 secs
+  Average:      0.2452 secs
+  Requests/sec: 801.0560
+  
+  Total data:   4660000 bytes
+  Size/request: 932 bytes
+
+Response time histogram:
+  0.004 [1]     |
+  0.114 [12]    |
+  0.223 [489]   |■■■■
+  0.333 [4362]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.442 [61]    |■
+  0.552 [67]    |■
+  0.661 [3]     |
+  0.771 [0]     |
+  0.880 [0]     |
+  0.990 [0]     |
+  1.099 [5]     |
+
+
+Latency distribution:
+  10% in 0.2234 secs
+  25% in 0.2305 secs
+  50% in 0.2389 secs
+  75% in 0.2506 secs
+  90% in 0.2713 secs
+  95% in 0.2868 secs
+  99% in 0.4671 secs
+
+Details (average, fastest, slowest):
+  DNS+dialup:   0.0022 secs, 0.0045 secs, 1.0995 secs
+  DNS-lookup:   0.0009 secs, 0.0000 secs, 0.0603 secs
+  req write:    0.0002 secs, 0.0000 secs, 0.0319 secs
+  resp wait:    0.2426 secs, 0.0044 secs, 1.0705 secs
+  resp read:    0.0001 secs, 0.0000 secs, 0.0060 secs
+
+Status code distribution:
+  [200] 5000 responses
+
+
+
+
+(venv) D:\Fastapi+Vue-新闻头条项目>docker run --rm williamyeh/hey -n 5000 -c 200 "http://host.docker.internal:8000/api/news/list?categoryId=1&page=1&pageSize=10"
+
+Summary:
+  Total:        14.5784 secs
+  Slowest:      11.8667 secs
+  Fastest:      0.0068 secs
+  Average:      0.4101 secs
+  Requests/sec: 342.9727
+  
+  Total data:   15503068 bytes
+  Size/request: 3100 bytes
+
+Response time histogram:
+  0.007 [1]     |
+  1.193 [4556]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  2.379 [159]   |■
+  3.565 [123]   |■
+  4.751 [80]    |■
+  5.937 [34]    |
+  7.123 [18]    |
+  8.309 [8]     |
+  9.495 [15]    |
+  10.681 [3]    |
+  11.867 [3]    |
+
+
+Latency distribution:
+  10% in 0.0725 secs
+  25% in 0.0775 secs
+  50% in 0.0833 secs
+  75% in 0.0946 secs
+  90% in 0.9917 secs
+  95% in 2.6333 secs
+  99% in 5.9012 secs
+
+Details (average, fastest, slowest):
+  DNS+dialup:   0.0022 secs, 0.0068 secs, 11.8667 secs
+  DNS-lookup:   0.0015 secs, 0.0000 secs, 0.0814 secs
+  req write:    0.0000 secs, 0.0000 secs, 0.0044 secs
+  resp wait:    0.4068 secs, 0.0067 secs, 11.7727 secs
+  resp read:    0.0002 secs, 0.0000 secs, 0.0053 secs
+
+Status code distribution:
+  [200] 5000 responses
