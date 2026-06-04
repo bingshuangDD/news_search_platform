@@ -13,6 +13,9 @@ export const aiChatConfig = {
   // 请求自己的后端，由后端代理转发到 AI 服务商
   apiEndpoint: (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '/api/ai/chat',
 
+  // RAG 新闻问答端点
+  ragEndpoint: (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '/api/ai/ask',
+
   // API Key 由后端管理，前端不持有
   apiKey: '',
 

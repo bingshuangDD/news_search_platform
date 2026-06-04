@@ -42,7 +42,12 @@ export default {
     title: 'AI Chat',
     placeholder: 'Enter your question...',
     send: 'Send',
-    thinking: 'AI is thinking...'
+    thinking: 'AI is thinking...',
+    // 以下为 RAG 新增
+    ragMode: 'News Q&A',
+    freeMode: 'Free Chat',
+    ragWelcome: 'Hello! I\'m a news Q&A assistant. Ask me anything about the news on this site!',
+    freeWelcome: 'Hello! I\'m an AI assistant. How can I help you?',
   },
   my: {
     title: 'My',

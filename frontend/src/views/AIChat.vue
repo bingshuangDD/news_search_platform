@@ -1,7 +1,15 @@
 <template>
   <div class="ai-chat-container">
     <van-nav-bar title="AI问答" fixed />
-    
+
+    <!-- 模式切换标签 -->
+    <div class="chat-mode-tabs">
+      <van-tabs v-model:active="chatMode" type="card">
+        <van-tab name="rag" title="📰 新闻问答" />
+        <van-tab name="free" title="💬 自由聊天" />
+      </van-tabs>
+    </div>
+
     <div class="chat-content">
       <div class="messages-container" ref="messagesContainer">
         <div 
@@ -55,11 +63,22 @@ import { aiChatConfig } from '../config/api';
 
 // 聊天消息
 const messages = ref([
-  { role: 'assistant', content: '你好！我是AI助手，有什么可以帮助你的吗？' }
+  { role: 'assistant', content: '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！' }
 ]);
 const userInput = ref('');
 const messagesContainer = ref(null);
 const isLoading = ref(false);
+const chatMode = ref('rag');  // 'rag' | 'free'
+
+// 切换模式时重置对话
+const onModeChange = (name) => {
+  messages.value = [
+    { role: 'assistant', content: name === 'rag'
+      ? '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！'
+      : '你好！我是AI助手，有什么可以帮助你的吗？'
+    }
+  ];
+};
 
 // 从配置文件获取API设置
 const apiEndpoint = ref(aiChatConfig.apiEndpoint);
@@ -92,7 +111,18 @@ const sendMessage = async () => {
   // 发送请求
   isLoading.value = true;
   try {
-    await fetchAIResponse(userMessage);
+    const body = chatMode.value === 'rag'
+      ? JSON.stringify({ question: userMessage, top_k: 3 })
+      : (() => {
+          const allMessages = messages.value.slice(0, -1).map(msg => ({ role: msg.role, content: msg.content }));
+          return JSON.stringify({ model: model.value, messages: allMessages, stream: true });
+        })();
+
+    const endpoint = chatMode.value === 'rag'
+      ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '/api/ai/ask'
+      : apiEndpoint.value;
+
+    await fetchAIResponse(endpoint, body);
   } catch (error) {
     console.error('Error fetching AI response:', error);
     // 更新最后一条消息为错误信息
@@ -105,22 +135,14 @@ const sendMessage = async () => {
 };
 
 // 获取AI响应（使用SSE）
-const fetchAIResponse = async (userMessage) => {
-  const allMessages = messages.value
-    .slice(0, -1) // 排除最后一个空的assistant消息
-    .map(msg => ({ role: msg.role, content: msg.content }));
-  
+const fetchAIResponse = async (endpoint, body) => {
   try {
-    const response = await fetch(apiEndpoint.value, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: model.value,
-        messages: allMessages,
-        stream: true
-      })
+      body: body,
     });
     
     if (!response.ok) {
@@ -188,6 +210,11 @@ const scrollToBottom = () => {
 watch(messages, () => {
   nextTick(scrollToBottom);
 }, { deep: true });
+
+// 监听模式切换
+watch(chatMode, (newMode) => {
+  onModeChange(newMode);
+});
 
 // 组件挂载时滚动到底部
 onMounted(() => {
@@ -340,5 +367,18 @@ onMounted(() => {
 :deep(a) {
   color: #1989fa;
   text-decoration: none;
+}
+
+.chat-mode-tabs {
+  background: #fff;
+  padding: 2px 0;
+}
+
+.chat-mode-tabs :deep(.van-tabs__nav--card) {
+  margin: 0;
+}
+
+.chat-mode-tabs :deep(.van-tab) {
+  font-size: 13px;
 }
 </style>

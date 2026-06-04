@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import httpx
 
+from ..services.rag import ask_news_question
+
 load_dotenv()
 
 KIMI_API_KEY = os.getenv("KIMI_API_KEY")
@@ -19,6 +21,11 @@ class ChatRequest(BaseModel):
     messages: list[dict]
     model: str | None = None
     stream: bool = True
+
+
+class AskRequest(BaseModel):
+    question: str          # 用户问题
+    top_k: int = 3         # 检索数量，默认 3
 
 
 async def stream_kimi(messages: list[dict], model: str):
@@ -46,6 +53,19 @@ async def chat(req: ChatRequest):
     model = req.model or KIMI_MODEL
     return StreamingResponse(
         stream_kimi(req.messages, model),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+@router.post("/ask")
+async def ask_news(req: AskRequest):
+    """RAG 新闻问答（SSE 流式返回）"""
+    return StreamingResponse(
+        ask_news_question(req.question, req.top_k),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -6,3 +6,5 @@ venv/
 node_modules/
 INTERVIEW_QA.md
 package-lock.json
+RAG_EXPLAINED.md
+RAG_IMPLEMENTATION_SPEC.md

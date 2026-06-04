@@ -42,7 +42,12 @@ export default {
     title: 'AI问答',
     placeholder: '请输入您的问题...',
     send: '发送',
-    thinking: 'AI思考中...'
+    thinking: 'AI思考中...',
+    // 以下为 RAG 新增
+    ragMode: '新闻问答',
+    freeMode: '自由聊天',
+    ragWelcome: '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！',
+    freeWelcome: '你好！我是AI助手，有什么可以帮助你的吗？',
   },
   my: {
     title: '我的',

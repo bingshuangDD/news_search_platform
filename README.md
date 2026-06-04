@@ -6,7 +6,7 @@
 
 ## 项目概述
 
-新闻头条是一个全栈新闻资讯平台，提供新闻分类浏览、文章详情阅读、用户收藏/历史记录、个人中心管理以及 AI 智能聊天等功能。项目采用前后端分离架构，后端基于 FastAPI 提供 RESTful API 服务，前端基于 Vue 3 + Vant 构建移动端 SPA 应用。
+新闻头条是一个全栈新闻资讯平台，提供新闻分类浏览、文章详情阅读、用户收藏/历史记录、个人中心管理、AI 智能聊天以及 **RAG 新闻问答**（基于检索增强生成的新闻知识问答）等功能。项目采用前后端分离架构，后端基于 FastAPI 提供 RESTful API 服务，前端基于 Vue 3 + Vant 构建移动端 SPA 应用。
 
 ---
 
@@ -22,6 +22,7 @@
 | **缓存** | Redis | >=5.0.0 |
 | **密码加密** | bcrypt | >=4.0.0 |
 | **AI 集成** | Kimi API (Moonshot) + httpx | >=0.27.0 |
+| **中文分词** | jieba（RAG 检索） | >=0.42.1 |
 | **前端框架** | Vue 3 (Composition API) | — |
 | **构建工具** | Vite 5 | — |
 | **移动端 UI** | Vant 4 | — |
@@ -55,14 +56,19 @@ Fastapi+Vue-新闻头条项目/
 │   │   │   ├── users.py            # 用户注册/登录/Token 管理/信息更新
 │   │   │   ├── news.py             # 新闻分类/列表/详情/浏览量/相关推荐
 │   │   │   ├── news_cache.py       # 带 Redis 缓存的新闻查询
+│   │   │   ├── news_export.py      # 全量新闻导出（供 RAG 索引构建）
 │   │   │   ├── favorite.py         # 收藏增删查改
 │   │   │   └── history.py          # 历史记录增删查改
+│   │   ├── services/               # 业务服务层（RAG 核心）
+│   │   │   ├── __init__.py         # 包标记
+│   │   │   ├── retriever.py        # TF-IDF 检索器（jieba 分词 + 余弦相似度）
+│   │   │   └── rag.py              # RAG 主流程（索引构建 + 问答生成）
 │   │   ├── routers/                # API 路由层
 │   │   │   ├── news.py             # /api/news/* 新闻接口
 │   │   │   ├── users.py            # /api/user/* 用户接口
 │   │   │   ├── favorite.py         # /api/favorite/* 收藏接口
 │   │   │   ├── history.py          # /api/history/* 历史接口
-│   │   │   └── ai.py               # /api/ai/* AI 聊天接口（SSE 流式转发）
+│   │   │   └── ai.py               # /api/ai/* AI 聊天 + RAG 问答接口（SSE 流式）
 │   │   ├── cache/                  # 缓存键管理
 │   │   │   └── news_cache.py       # 新闻缓存键设计 + 读写封装
 │   │   └── utils/                  # 工具模块
@@ -97,14 +103,15 @@ Fastapi+Vue-新闻头条项目/
 
 FastAPI 应用在 `backend/app/main.py` 中创建，主要完成以下初始化：
 
-- 创建 `FastAPI` 实例，标题为"新闻平台项目"
+- 创建 `FastAPI` 实例，标题为"新闻平台项目"，注册 **lifespan** 生命周期管理
+- **启动时通过 lifespan 构建 RAG 检索索引**（从 MySQL 全量加载新闻 → jieba 分词 → TF-IDF 向量化 → 存入内存）
 - 注册 **CORS 中间件**（开发阶段允许所有源）
-- 注册 **5 个路由模块**：新闻、用户、收藏、历史、AI 聊天
+- 注册 **5 个路由模块**：新闻、用户、收藏、历史、AI 聊天（含 RAG 问答）
 - 注册 **全局异常处理器**（HTTP 异常、数据库完整性异常、SQLAlchemy 异常、通用异常）
 - 提供 `/` 根路径和 `/health` 健康检查端点
 
 ```python
-app = FastAPI(title="新闻平台项目", version="1.0.0")
+app = FastAPI(title="新闻平台项目", version="1.0.0", lifespan=lifespan)
 register_exception(app)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], ...)
 app.include_router(news.router)
@@ -266,9 +273,55 @@ async def get_current_user(authorization: str = Header(..., alias="Authorization
 
 | 方法 | 路径 | 说明 | 认证 |
 |---|---|---|---|
-| POST | `/api/ai/chat` | AI 聊天（SSE 流式转发到 Kimi API） | 否 |
+| POST | `/api/ai/chat` | AI 自由聊天（SSE 流式转发到 Kimi API） | 否 |
+| POST | `/api/ai/ask` | RAG 新闻问答（检索 + Prompt 拼接 + SSE 流式返回） | 否 |
 
-### 5. Redis 缓存层
+### 5. RAG 新闻问答系统（新增）
+
+RAG（Retrieval-Augmented Generation，检索增强生成）是本项目 AI 模块的核心特性。用户在 AI 问答页面切换到"📰 新闻问答"模式后，系统会基于本站真实新闻内容回答用户问题，而非依赖 LLM 的通用知识。
+
+#### 架构流程
+
+```
+服务启动（一次性）：
+  MySQL → 全量新闻 → jieba 分词 → TF-IDF 向量化 → 存入内存（~250 chunk）
+
+用户每次提问：
+  提问 → 分词 → TF-IDF 查询向量 → 与全部 chunk 计算余弦相似度
+       → 返回 Top-K 相关 chunk → 拼接 RAG Prompt → 调用 Kimi API → SSE 流式返回
+```
+
+#### 技术选型
+
+| 环节 | 选型 | 理由 |
+|------|------|------|
+| 分词 | jieba | 中文分词标准库，纯 Python，零配置 |
+| 检索算法 | TF-IDF + 余弦相似度 | 不需要 Embedding API，250 chunk 毫秒级检索 |
+| 向量存储 | Python 进程内存 | 250 chunk ≈ 100KB，启动 3 秒构建 |
+| LLM 调用 | 复用 `stream_kimi()` | 已有 SSE 流式转发，零改动 |
+| 前端模式 | `<van-tabs>` 标签切换 | Vant 4 原生组件，不改路由 |
+
+#### 核心文件
+
+| 文件 | 职责 |
+|------|------|
+| [services/retriever.py](backend/app/services/retriever.py) | `NewsRetriever` 类（jieba 分词 + TF-IDF 向量化 + 余弦相似度检索）+ `split_text()` 文本分块 |
+| [services/rag.py](backend/app/services/rag.py) | `build_news_index()` 索引构建 + `ask_news_question()` 检索→Prompt→流式生成 |
+| [crud/news_export.py](backend/app/crud/news_export.py) | `get_all_news_for_index()` 全量新闻查询（News JOIN Category） |
+
+#### 检索原理
+
+- **TF-IDF**：词频（TF）× 逆文档频率（IDF）。词在一篇文档中出现的次数越多、在整个语料库中出现的文档数越少，权重越高
+- **余弦相似度**：两个向量夹角的余弦值，只看方向不看长度，避免长文档天然占据优势
+- **分块策略**：每 400 字一个 chunk，60 字重叠，在检索粒度和语义完整性之间平衡
+
+#### 设计决策
+
+- **为什么不用 Embedding API？** 零外部依赖，不增加成本，可解释性强。`search()` 方法签名与 Embedding 检索一致，未来可一行替换
+- **为什么存内存而非 Redis？** 当前数据量（250 chunk ≈ 100KB）内存足够，避免 Redis 网络开销
+- **为什么复用 AIChat.vue？** SSE 流式渲染逻辑完全复用，不改 TabBar，一个 `<van-tabs>` 组件解决
+
+### 6. Redis 缓存层
 
 缓存层分层设计，针对不同数据特征设置不同过期策略：
 
@@ -312,15 +365,22 @@ async def get_category(db: AsyncSession, skip: int = 0, limit: int = 100):
 - 回退到手动配置 `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD`
 - 提供 `get_cache()`、`get_json_cache()`、`set_cache()` 三个通用工具函数
 
-### 6. AI 聊天集成 ([routers/ai.py](backend/app/routers/ai.py))
+### 7. AI 聊天与 RAG 问答集成 ([routers/ai.py](backend/app/routers/ai.py))
 
-AI 聊天模块作为 **服务端代理** 转发请求到 Kimi API（Moonshot），保证 API Key 不暴露到前端：
+AI 模块作为 **服务端代理** 转发请求到 Kimi API（Moonshot），保证 API Key 不暴露到前端。包含两种模式：
 
-- **模型**：默认 `kimi-k2.6`，可通过环境变量 `KIMI_MODEL` 配置
-- **传输方式**：**SSE (Server-Sent Events)** 流式传输
-- **实现**：使用 `httpx.AsyncClient` 的 `stream()` 方法逐块转发响应字节
+**自由聊天（`/api/ai/chat`）**：
+- 通用 AI 对话，前端收集历史消息直接转发
+- 模型：默认 `kimi-k2.6`，可通过环境变量 `KIMI_MODEL` 配置
+- 传输方式：**SSE (Server-Sent Events)** 流式传输
+
+**RAG 新闻问答（`/api/ai/ask`）**：
+- 接收用户自然语言问题 → 检索相关新闻 chunk → 拼接 RAG Prompt → 流式调用 Kimi
+- 请求体：`{"question": "...", "top_k": 3}`
+- System Prompt 约束 LLM 只基于检索到的新闻回答，避免幻觉
 
 ```python
+# 流式转发核心函数（两种模式共用）
 async def stream_kimi(messages: list[dict], model: str):
     async with httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0)) as client:
         async with client.stream("POST", f"{KIMI_BASE_URL}/v1/chat/completions",
@@ -331,7 +391,7 @@ async def stream_kimi(messages: list[dict], model: str):
                 yield chunk
 ```
 
-### 7. 统一异常处理 ([utils/exception_handler.py](backend/app/utils/exception_handler.py))
+### 8. 统一异常处理 ([utils/exception_handler.py](backend/app/utils/exception_handler.py))
 
 全局注册的异常处理器按优先级从具体到通用排列：
 
@@ -342,7 +402,7 @@ async def stream_kimi(messages: list[dict], model: str):
 | `SQLAlchemyError` | 返回通用数据库错误 | 连接超时、查询异常 |
 | `Exception` | 兜底处理，区分 DEBUG 模式 | 未知运行时错误 |
 
-### 8. 统一响应格式 ([utils/response.py](backend/app/utils/response.py))
+### 9. 统一响应格式 ([utils/response.py](backend/app/utils/response.py))
 
 ```python
 def success_response(message: str = "success", data=None):
@@ -421,6 +481,7 @@ mysql -u root -p < db/init.sql
 
 # 7. 启动服务
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# 启动后观察日志：[RAG] 索引构建完成，共 XX 个 chunk
 ```
 
 ### 前端
@@ -466,8 +527,9 @@ npm run dev
 
 前端基于 **Vue 3 Composition API + Vant 4 移动端组件库** 构建，主要特性：
 
-- **10 个页面**：首页、新闻详情、分类管理、AI 聊天、收藏、历史、个人中心、编辑资料、登录、注册
+- **10 个页面**：首页、新闻详情、分类管理、AI 聊天（含 RAG 新闻问答模式和自由聊天模式）、收藏、历史、个人中心、编辑资料、登录、注册
 - **底部导航栏**：首页、AI 聊天、我的（三 Tab 布局）
+- **AI 问答模式切换**：通过 `<van-tabs>` 标签在"📰 新闻问答"（RAG）和"💬 自由聊天"之间切换，SSE 流式渲染代码全复用
 - **状态管理**：Pinia + 持久化插件，管理用户登录态、主题切换、语言切换
 - **国际化**：支持中文/英文切换（vue-i18n）
 - **多主题**：浅色/深色/蓝色/绿色四种主题配色

@@ -15,8 +15,28 @@ from .config.database import (
 from .schemas import users
 from .routers import news,users,favorite,history,ai
 from .utils.exception_handler import register_exception
+from .services.rag import build_news_index
 
-app = FastAPI(title="新闻平台项目", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期：启动时构建 RAG 索引，关闭时清理资源"""
+    # 启动：加载新闻构建检索索引
+    async with AsyncSessionLocal() as session:
+        try:
+            chunk_count = await build_news_index(session)
+            print(f"[RAG] 索引构建完成，共 {chunk_count} 个 chunk")
+        except Exception as e:
+            print(f"[RAG] 索引构建失败（服务仍可启动）: {e}")
+    yield
+    # 关闭：无需额外清理（数据库连接由 close_db 处理）
+
+
+app = FastAPI(
+    title="新闻平台项目",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 register_exception(app)
 
