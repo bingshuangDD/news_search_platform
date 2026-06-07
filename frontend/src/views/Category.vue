@@ -81,31 +81,45 @@ const getCategoryTranslation = (categoryName) => {
 .category {
   padding-top: 46px;
   padding-bottom: 50px;
-  background-color: #f7f8fa;
+  background-color: var(--background-color);
   min-height: 100vh;
 }
 
 .category-container {
-  padding: 16px;
+  padding: 16px 12px;
+}
+
+/* ===== 网格卡片 ===== */
+.category-container :deep(.van-grid) {
+  gap: 12px;
+}
+
+.category-container :deep(.van-grid-item) {
+  margin-bottom: 4px;
+}
+
+.category-container :deep(.van-grid-item__content) {
   background-color: #fff;
-  margin-top: 12px;
-  border-radius: 8px;
+  border-radius: 16px;
+  padding: 24px 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-:deep(.van-grid-item__content) {
-  background-color: #f5f7fa;
-  border-radius: 8px;
-  padding: 20px 0;
+.category-container :deep(.van-grid-item__content:active) {
+  transform: scale(0.96);
+  box-shadow: var(--shadow-float);
 }
 
-:deep(.van-grid-item__icon) {
-  font-size: 28px;
-  color: #1989fa;
+.category-container :deep(.van-grid-item__icon) {
+  font-size: 32px;
+  color: #4F46E5;
 }
 
-:deep(.van-grid-item__text) {
+.category-container :deep(.van-grid-item__text) {
   margin-top: 8px;
-  color: #333;
+  color: #334155;
   font-size: 14px;
+  font-weight: 500;
 }
 </style>

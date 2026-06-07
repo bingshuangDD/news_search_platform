@@ -230,6 +230,7 @@ onMounted(() => {
   padding-top: 46px;
   padding-bottom: 50px;
   box-sizing: border-box;
+  background-color: var(--background-color);
 }
 
 .chat-content {
@@ -242,12 +243,13 @@ onMounted(() => {
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px 10px;
 }
 
 .message {
   margin-bottom: 10px;
   max-width: 80%;
+  animation: fadeSlideUp 0.3s ease both;
 }
 
 .user-message {
@@ -259,67 +261,104 @@ onMounted(() => {
 }
 
 .message-content {
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px 14px;
   word-break: break-word;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .user-message .message-content {
-  background-color: #007aff;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
   color: white;
+  border-radius: 16px 16px 4px 16px;
 }
 
 .ai-message .message-content {
-  background-color: #f2f2f2;
-  color: #333;
+  background-color: #FFFFFF;
+  color: #1E293B;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: var(--shadow-card);
 }
 
+/* ===== 输入区 ===== */
 .input-container {
   display: flex;
-  padding: 10px;
-  border-top: 1px solid #eee;
+  align-items: flex-end;
+  padding: 10px 12px;
   background-color: #fff;
+  gap: 8px;
+  box-shadow: 0 -1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.input-container :deep(.van-field) {
+  flex: 1;
+  background: #F1F5F9;
+  border-radius: 24px;
+  padding: 8px 16px;
+}
+
+.input-container :deep(.van-field__control) {
+  background: transparent;
 }
 
 .chat-input {
   flex: 1;
-  margin-right: 10px;
 }
 
 .send-button {
-  align-self: flex-end;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-float);
+  transition: transform 0.15s ease;
 }
 
-/* Markdown 样式 */
+.send-button:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.send-button :deep(.van-button__text) {
+  font-size: 14px;
+}
+
+/* ===== Markdown 内容样式 ===== */
 .message-content pre {
-  background-color: #f8f8f8;
+  background-color: rgba(0, 0, 0, 0.06);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   overflow-x: auto;
+  margin: 8px 0;
 }
 
 .message-content code {
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 2px 4px;
-  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.06);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.user-message .message-content pre,
+.user-message .message-content code {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .message-content img {
   max-width: 100%;
 }
 
-/* 打字指示器 */
+/* ===== 打字指示器 ===== */
 .typing-indicator {
   display: flex;
-  padding: 5px;
+  padding: 6px;
+  gap: 4px;
 }
 
 .typing-indicator span {
   height: 8px;
   width: 8px;
-  background-color: #999;
+  background-color: #94A3B8;
   border-radius: 50%;
-  margin: 0 2px;
   display: inline-block;
   animation: bounce 1.5s infinite ease-in-out;
 }
@@ -341,44 +380,65 @@ onMounted(() => {
   }
 }
 
-/* Markdown样式 */
-:deep(pre) {
-  background-color: #f0f0f0;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-:deep(code) {
-  font-family: monospace;
-  background-color: #f0f0f0;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-:deep(p) {
-  margin: 8px 0;
-}
-
-:deep(ul), :deep(ol) {
-  padding-left: 20px;
-}
-
-:deep(a) {
-  color: #1989fa;
-  text-decoration: none;
-}
-
+/* ===== 模式切换标签 ===== */
 .chat-mode-tabs {
   background: #fff;
-  padding: 2px 0;
+  padding: 4px 0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 .chat-mode-tabs :deep(.van-tabs__nav--card) {
-  margin: 0;
+  margin: 0 12px;
+  background: #F1F5F9;
+  border-radius: 12px;
+  border: none;
 }
 
-.chat-mode-tabs :deep(.van-tab) {
+.chat-mode-tabs :deep(.van-tabs__nav--card .van-tab) {
+  border: none;
+  background: transparent;
+  color: #64748B;
+  border-radius: 10px;
   font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.chat-mode-tabs :deep(.van-tabs__nav--card .van-tab--active) {
+  background: #FFFFFF;
+  color: #4F46E5;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+}
+
+/* ===== 深色模式适配 ===== */
+body.theme-dark .message-content pre,
+body.theme-dark .message-content code {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .ai-message .message-content {
+  background-color: #1E293B;
+  color: #F8FAFC;
+}
+
+body.theme-dark .input-container {
+  background-color: #1E293B;
+}
+
+body.theme-dark .input-container :deep(.van-field) {
+  background: #334155;
+}
+
+body.theme-dark .chat-mode-tabs {
+  background: #1E293B;
+}
+
+body.theme-dark .chat-mode-tabs :deep(.van-tabs__nav--card) {
+  background: #334155;
+}
+
+body.theme-dark .chat-mode-tabs :deep(.van-tabs__nav--card .van-tab--active) {
+  background: #475569;
+  color: #818CF8;
 }
 </style>

@@ -24,10 +24,11 @@
               :finished-text="$t('home.noMore')"
               @load="onLoad"
             >
-              <news-item 
-                v-for="item in newsStore.newsList" 
-                :key="item.id" 
-                :news="item" 
+              <news-item
+                v-for="(item, index) in newsStore.newsList"
+                :key="item.id"
+                :news="item"
+                :style="{ animationDelay: `${Math.min(index, 20) * 0.05}s` }"
               />
             </van-list>
           </van-pull-refresh>
@@ -210,39 +211,61 @@ const changeCategory = (categoryId) => {
 .home {
   padding-top: 46px;
   padding-bottom: 50px;
-  background-color: #f7f8fa;
+  background-color: var(--background-color);
   min-height: 100vh;
 }
 
+/* ===== 导航栏 ===== */
+:deep(.van-nav-bar) {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* ===== 分类标签栏 ===== */
 .category-tabs {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   position: relative;
 }
 
 :deep(.van-tabs__wrap) {
   background-color: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+:deep(.van-tabs__nav) {
+  padding: 4px 8px;
 }
 
 :deep(.van-tab) {
   font-size: 14px;
+  border-radius: 999px;
+  margin: 0 2px;
+  padding: 0 12px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 :deep(.van-tab--active) {
-  font-weight: bold;
-  color: #1989fa;
+  font-weight: 600;
+  color: #4F46E5;
+  background: #EEF2FF;
+  border-radius: 999px;
 }
 
+/* 隐藏默认底部指示线 */
+:deep(.van-tabs__line) {
+  display: none;
+}
+
+/* ===== "更多"按钮 ===== */
 .more-options {
   position: fixed;
   right: 0;
   background-color: #fff;
   padding: 0;
-  border-radius: 4px 0 0 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+  box-shadow: -4px 1px 12px rgba(15, 23, 42, 0.04);
   z-index: 1000;
-  /* 通过计算属性动态设置top */
   top: v-bind('tabsTop + "px"');
-  height: 44px; /* 与van-tabs__wrap高度一致 */
+  height: 44px;
   display: flex;
   align-items: center;
 }
@@ -252,10 +275,18 @@ const changeCategory = (categoryId) => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #1989fa;
-  font-weight: bold;
+  color: #4F46E5;
+  font-weight: 600;
   height: 100%;
-  padding: 0 10px;
+  padding: 0 12px;
+  background: #EEF2FF;
+  border-radius: 999px;
+  margin: 0 8px;
+  transition: transform 0.15s ease;
+}
+
+.more-tab:active {
+  transform: scale(0.95);
 }
 
 .dropdown-menu {
@@ -264,22 +295,25 @@ const changeCategory = (categoryId) => {
   top: 40px;
   min-width: 100px;
   background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  box-shadow: var(--shadow-float);
+  border-radius: 12px;
   z-index: 999;
+  overflow: hidden;
 }
 
 .dropdown-item {
   padding: 10px 15px;
   text-align: center;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #F1F5F9;
+  transition: background-color 0.15s ease;
 }
 
 .dropdown-item:last-child {
   border-bottom: none;
 }
 
-.dropdown-item:hover {
-  background-color: #f5f5f5;
+.dropdown-item:hover,
+.dropdown-item:active {
+  background-color: #EEF2FF;
 }
 </style>

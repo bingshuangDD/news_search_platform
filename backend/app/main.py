@@ -1,8 +1,10 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from .config.cache import redis_client
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, select
+from sqlalchemy import String, select, text
 from contextlib import asynccontextmanager
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,5 +62,27 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    checks = {}
+    
+    # 数据库检查
+    try:
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception as e:
+        checks["database"] = f"error: {str(e)}"
+    
+    # Redis检查
+    try:
+        await redis_client.ping() # type: ignore
+        checks["redis"] = "ok"
+    except Exception as e:
+        checks["redis"] = f"error: {str(e)}"
+    
+    # 综合判断
+    status = "healthy" if all(v == "ok" for v in checks.values()) else "degraded"
+    return JSONResponse(
+        status_code=200 if status == "healthy" else 503,
+        content={"status": status, "checks": checks}
+    )
 

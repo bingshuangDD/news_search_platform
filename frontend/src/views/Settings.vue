@@ -134,18 +134,42 @@ const changeLanguage = () => {
   margin-top: 20px;
 }
 
+.settings-list :deep(.van-cell-group) {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.settings-list :deep(.van-cell-group__title) {
+  color: #64748B;
+  font-size: 13px;
+  padding: 8px 16px 4px;
+}
+
+.settings-list :deep(.van-cell) {
+  padding: 14px 16px;
+  transition: background-color 0.15s ease;
+}
+
+.settings-list :deep(.van-cell:active) {
+  background-color: #F8FAFC;
+}
+
+/* ===== 弹出层 ===== */
 .popup-title {
   text-align: center;
   padding: 16px;
   font-size: 16px;
-  font-weight: bold;
-  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  color: #0F172A;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .theme-list {
   display: flex;
   flex-wrap: wrap;
   padding: 16px;
+  justify-content: center;
 }
 
 .theme-item {
@@ -155,22 +179,40 @@ const changeLanguage = () => {
   align-items: center;
   margin-bottom: 16px;
   cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.theme-item:active {
+  transform: scale(0.95);
 }
 
 .theme-color {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   margin-bottom: 8px;
   border: 2px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .theme-item.active .theme-color {
-  border-color: #1989fa;
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
 .theme-name {
   font-size: 12px;
+  color: #64748B;
+}
+
+.theme-item.active .theme-name {
+  color: #4F46E5;
+  font-weight: 600;
+}
+
+/* ===== 语言选项 ===== */
+:deep(.language-active) {
+  background-color: #EEF2FF;
 }
 
 .popup-footer {
@@ -179,9 +221,5 @@ const changeLanguage = () => {
   bottom: 0;
   left: 0;
   right: 0;
-}
-
-.language-active {
-  background-color: #f5f5f5;
 }
 </style>

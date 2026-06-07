@@ -36,9 +36,19 @@ const goToDetail = () => {
 <style scoped>
 .news-item {
   display: flex;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f2f2f2;
+  padding: 16px;
+  margin: 12px 16px;
   background-color: #fff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  border-bottom: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeSlideUp 0.4s ease both;
+}
+
+.news-item:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-float);
 }
 
 .news-content {
@@ -49,7 +59,8 @@ const goToDetail = () => {
 
 .news-title {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #0F172A;
   margin: 0 0 8px;
   line-height: 1.4;
   overflow: hidden;
@@ -61,7 +72,7 @@ const goToDetail = () => {
 
 .news-desc {
   font-size: 14px;
-  color: #666;
+  color: #64748B;
   margin: 0 0 8px;
   line-height: 1.4;
   overflow: hidden;
@@ -73,12 +84,18 @@ const goToDetail = () => {
 
 .news-info {
   font-size: 12px;
-  color: #999;
+  color: #94A3B8;
   display: flex;
+  align-items: center;
 }
 
 .news-info span {
-  margin-right: 10px;
+  margin-right: 6px;
+}
+
+.news-info span:not(:last-child)::after {
+  content: '·';
+  margin-left: 6px;
 }
 
 .news-image {
@@ -91,6 +108,6 @@ const goToDetail = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 12px;
 }
 </style>

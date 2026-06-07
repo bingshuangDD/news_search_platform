@@ -1,14 +1,16 @@
 <template>
   <div class="app">
-    <router-view v-slot="{ Component }">
-      <template v-if="$route.meta.keepAlive">
-        <keep-alive>
-          <component :is="Component" />
-        </keep-alive>
-      </template>
-      <template v-else>
-        <component :is="Component" />
-      </template>
+    <router-view v-slot="{ Component, route }">
+      <transition :name="route.meta.transition || 'page-fade'" mode="out-in">
+        <template v-if="route.meta.keepAlive">
+          <keep-alive>
+            <component :is="Component" :key="route.path" />
+          </keep-alive>
+        </template>
+        <template v-else>
+          <component :is="Component" :key="route.path" />
+        </template>
+      </transition>
     </router-view>
   </div>
 </template>
@@ -30,8 +32,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px;
-  background-color: #f7f8fa;
-  color: #333;
+  background-color: #F8FAFC;
+  color: #1E293B;
   height: 100%;
   width: 100%;
 }
@@ -40,6 +42,22 @@ html, body {
   max-width: 750px;
   margin: 0 auto;
   height: 100%;
+}
+
+/* ===== 页面转场动画 ===== */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* 移动端适配 */

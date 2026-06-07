@@ -129,7 +129,7 @@ const goToLogin = () => {
 <style scoped>
 .register-page {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: #F8FAFC;
 }
 
 .register-container {
@@ -144,10 +144,20 @@ const goToLogin = () => {
   text-align: center;
 }
 
+.register-logo :deep(.van-image) {
+  animation: logoBreathe 3s ease-in-out infinite;
+}
+
+@keyframes logoBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 .register-logo h2 {
   margin-top: 16px;
-  color: #323233;
+  color: #0F172A;
   font-size: 22px;
+  font-weight: 700;
 }
 
 .register-form {
@@ -155,18 +165,57 @@ const goToLogin = () => {
   padding: 0 16px;
 }
 
+/* ===== 表单卡片 ===== */
+.register-form :deep(.van-cell-group--inset) {
+  border-radius: 20px;
+  box-shadow: var(--shadow-modal);
+  margin: 0;
+  overflow: hidden;
+}
+
+.register-form :deep(.van-cell) {
+  padding: 14px 16px;
+}
+
+.register-form :deep(.van-field__control) {
+  background: #F1F5F9;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.register-form :deep(.van-field__control::placeholder) {
+  color: #94A3B8;
+}
+
 .submit-btn {
   margin: 24px 16px;
+}
+
+.submit-btn :deep(.van-button) {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  border: none;
+  box-shadow: var(--shadow-float);
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.submit-btn :deep(.van-button:active) {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-modal);
 }
 
 .login-link {
   text-align: center;
   margin-top: 16px;
-  color: #969799;
+  color: #94A3B8;
   font-size: 14px;
 }
 
 .login-link span {
-  color: #1989fa;
+  color: #4F46E5;
+  font-weight: 600;
 }
 </style>

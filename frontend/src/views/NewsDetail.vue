@@ -190,8 +190,9 @@ onMounted(async () => {
 
 .title {
   font-size: 22px;
-  font-weight: bold;
-  line-height: 1.4;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0F172A;
   margin: 0;
   flex: 1;
 }
@@ -199,25 +200,37 @@ onMounted(async () => {
 .favorite-btn {
   flex-shrink: 0;
   margin-left: 10px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  border-radius: 999px;
+  box-shadow: var(--shadow-float);
+  transition: transform 0.15s ease;
+}
+
+.favorite-btn:active {
+  transform: scale(0.92);
 }
 
 .favorite-btn.is-favorite {
-  color: #ff9500;
+  color: #F59E0B;
 }
 
 .info {
   display: flex;
   font-size: 12px;
-  color: #999;
+  color: #94A3B8;
   margin-bottom: 16px;
+  align-items: center;
 }
 
 .info span {
-  margin-right: 12px;
+  margin-right: 6px;
+}
+
+.info span:not(:last-child)::after {
+  content: '·';
+  margin-left: 6px;
 }
 
 .cover {
@@ -226,59 +239,77 @@ onMounted(async () => {
 
 .cover img {
   width: 100%;
-  border-radius: 4px;
+  border-radius: 16px;
 }
 
 .content {
   font-size: 16px;
-  line-height: 1.8;
-  color: #333;
+  line-height: 1.85;
+  color: #334155;
 }
 
 .content p {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: justify;
 }
 
 .related-news {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 8px solid #f5f5f5;
+  border-top: 8px solid #F8FAFC;
 }
 
 .related-news h3 {
   font-size: 18px;
+  font-weight: 600;
+  color: #0F172A;
   margin: 0 0 16px;
 }
 
 .related-list {
   display: flex;
-  flex-direction: column;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.related-list::-webkit-scrollbar {
+  display: none;
 }
 
 .related-item {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  width: 140px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .related-image {
-  width: 80px;
-  height: 60px;
-  margin-right: 12px;
-  flex-shrink: 0;
+  width: 140px;
+  height: 90px;
 }
 
 .related-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 12px 12px 0 0;
 }
 
 .related-title {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
-  flex: 1;
+  padding: 8px 10px;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 </style>

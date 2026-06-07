@@ -123,7 +123,7 @@ onMounted(async () => {
 .favorite-container {
   padding-top: 46px;
   padding-bottom: 20px;
-  background-color: #f7f8fa;
+  background-color: var(--background-color);
   min-height: 100vh;
 }
 
@@ -147,7 +147,7 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 12px;
 }
 
 .news-info {
@@ -159,7 +159,8 @@ onMounted(async () => {
 
 .news-title {
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
+  color: #0F172A;
   line-height: 1.4;
   margin-bottom: 8px;
   display: -webkit-box;
@@ -172,21 +173,27 @@ onMounted(async () => {
 
 .news-meta {
   font-size: 12px;
-  color: #999;
+  color: #94A3B8;
   display: flex;
   flex-wrap: wrap;
 }
 
 .news-meta span {
-  margin-right: 10px;
+  margin-right: 6px;
+}
+
+.news-meta span:not(:last-child)::after {
+  content: '·';
+  margin-left: 6px;
 }
 
 .favorite-item {
   position: relative;
   margin-bottom: 10px;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
 .delete-btn {
@@ -195,8 +202,8 @@ onMounted(async () => {
   right: 10px;
   transform: translateY(-50%);
   z-index: 10;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border-radius: 50%;
   display: flex;

@@ -149,25 +149,33 @@ onMounted(async () => {
   z-index: 999;
 }
 
+/* ===== 用户信息卡片 ===== */
 .user-info {
   display: flex;
   align-items: center;
-  padding: 20px 16px;
-  background-color: var(--primary-color);
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
   color: #fff;
-  border-radius: 8px;
+  border-radius: 20px;
   margin: 16px;
   position: relative;
+  box-shadow: var(--shadow-modal);
 }
 
 .arrow-icon {
   position: absolute;
   right: 16px;
-  color: #969799;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .avatar {
   margin-right: 16px;
+}
+
+.avatar :deep(.van-image) {
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .info {
@@ -176,16 +184,53 @@ onMounted(async () => {
 
 .username {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 4px;
+  color: #fff;
 }
 
 .desc {
   font-size: 14px;
-  color: #999;
+  color: rgba(255, 255, 255, 0.8);
 }
 
+.desc :deep(.van-button) {
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+.desc :deep(.van-button--primary) {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+/* ===== 菜单列表 ===== */
 .menu-list {
   margin: 0 16px;
+}
+
+.menu-list :deep(.van-cell-group) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 12px;
+}
+
+.menu-list :deep(.van-cell) {
+  padding: 14px 16px;
+  transition: background-color 0.15s ease;
+}
+
+.menu-list :deep(.van-cell:active) {
+  background-color: #F8FAFC;
+}
+
+.menu-list :deep(.van-cell__right-icon) {
+  color: #CBD5E1;
+}
+
+body.theme-dark .menu-list :deep(.van-cell:active) {
+  background-color: #334155;
 }
 </style>

@@ -1,18 +1,107 @@
-/* 移动端适配基础样式 */
+/* ===== 移动端适配基础样式 ===== */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* 主题变量 */
-  --primary-color: #1989fa;
-  --text-color: #333;
-  --text-color-light: #666;
-  --text-color-lighter: #999;
-  --border-color: #ebedf0;
-  --background-color: #f7f8fa;
+  /* ===== Slate 灰度系（主文字/背景） ===== */
+  --slate-50:  #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1E293B;
+  --slate-900: #0F172A;
+
+  /* ===== Indigo 主色系 ===== */
+  --indigo-50:  #EEF2FF;
+  --indigo-100: #E0E7FF;
+  --indigo-400: #818CF8;
+  --indigo-500: #6366F1;
+  --indigo-600: #4F46E5;
+  --indigo-700: #4338CA;
+  --indigo-800: #3730A3;
+
+  /* ===== 语义色 ===== */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger:  #EF4444;
+
+  /* ===== 主题变量（向后兼容 + 新设计系统） ===== */
+  --primary-color: #4F46E5;
+  --primary-light: #818CF8;
+  --primary-deep: #3730A3;
+  --text-color: #1E293B;
+  --text-color-light: #64748B;
+  --text-color-lighter: #94A3B8;
+  --border-color: #E2E8F0;
+  --background-color: #F8FAFC;
+  --surface-color: #FFFFFF;
   --white: #fff;
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
+
+  /* ===== Vant 核心变量覆盖 ===== */
+  --van-primary-color: #4F46E5;
+  --van-success-color: #10B981;
+  --van-warning-color: #F59E0B;
+  --van-danger-color: #EF4444;
+
+  /* 圆角系统 */
+  --van-border-radius-sm: 8px;
+  --van-border-radius-md: 12px;
+  --van-border-radius-lg: 16px;
+  --van-border-radius-max: 20px;
+
+  /* 背景 */
+  --van-background: #F8FAFC;
+  --van-background-2: #FFFFFF;
+
+  /* 文字 */
+  --van-text-color: #1E293B;
+  --van-text-color-2: #64748B;
+  --van-text-color-3: #94A3B8;
+
+  /* 边框/分割线 */
+  --van-border-color: #E2E8F0;
+
+  /* 按钮 */
+  --van-button-primary-background: #4F46E5;
+  --van-button-primary-border-color: #4F46E5;
+  --van-button-radius: 12px;
+  --van-button-default-height: 44px;
+
+  /* 导航栏 */
+  --van-nav-bar-background: #FFFFFF;
+  --van-nav-bar-title-text-color: #0F172A;
+  --van-nav-bar-title-font-weight: 600;
+
+  /* Tab */
+  --van-tab-active-text-color: #4F46E5;
+  --van-tabs-bottom-bar-color: #4F46E5;
+  --van-tab-font-weight: 500;
+
+  /* Cell */
+  --van-cell-background: transparent;
+  --van-cell-group-background: #FFFFFF;
+  --van-cell-group-inset-radius: 16px;
+  --van-cell-group-inset-padding: 4px 0;
+
+  /* Field 输入框 */
+  --van-field-label-color: #475569;
+
+  /* ===== 阴影系统（Layered Shadow） ===== */
+  --shadow-card:
+    0 1px 3px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-float:
+    0 4px 6px rgba(15, 23, 42, 0.03),
+    0 10px 20px rgba(15, 23, 42, 0.08);
+  --shadow-modal:
+    0 10px 25px rgba(15, 23, 42, 0.10),
+    0 20px 48px rgba(15, 23, 42, 0.05);
 
   color-scheme: light dark;
   color: var(--text-color);
@@ -103,7 +192,7 @@ body {
   overflow: hidden;
 }
 
-/* 骨架屏动画 */
+/* ===== 骨架屏动画 ===== */
 @keyframes skeleton-loading {
   0% {
     background-position: 100% 50%;
@@ -114,12 +203,23 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+  background: linear-gradient(90deg, #F8FAFC 25%, #EEF2FF 37%, #F8FAFC 63%);
   background-size: 400% 100%;
   animation: skeleton-loading 1.4s ease infinite;
 }
 
-/* 点击反馈效果 */
+/* ===== 微交互：全局点击反馈 ===== */
+.clickable {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.clickable:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* 点击波纹效果 */
 .click-effect {
   position: relative;
   overflow: hidden;
@@ -146,4 +246,43 @@ body {
   transform: scale(0, 0);
   opacity: 0.1;
   transition: 0s;
+}
+
+/* ===== 滚动行为优化 ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===== 列表进入动画 ===== */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 深色主题全局覆盖 ===== */
+body.theme-dark {
+  --van-primary-color: #818CF8;
+  --van-background: #0F172A;
+  --van-background-2: #1E293B;
+  --van-text-color: #F8FAFC;
+  --van-text-color-2: #94A3B8;
+  --van-text-color-3: #64748B;
+  --van-border-color: #334155;
+  --van-nav-bar-background: #1E293B;
+  --van-nav-bar-title-text-color: #F8FAFC;
+  --shadow-card:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-float:
+    0 4px 6px rgba(0, 0, 0, 0.2),
+    0 10px 20px rgba(0, 0, 0, 0.3);
+  --shadow-modal:
+    0 10px 25px rgba(0, 0, 0, 0.4),
+    0 20px 48px rgba(0, 0, 0, 0.3);
 }
