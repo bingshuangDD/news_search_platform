@@ -453,6 +453,133 @@ def success_response(message: str = "success", data=None):
 
 ---
 
+## Docker Compose 云服务器部署
+
+生产编排由 `compose.yaml` 管理，包含 FastAPI、MySQL、Redis、Nginx 和 Certbot。只有 Nginx 暴露宿主机的 80/443 端口，MySQL 与 Redis 仅在 Docker 内部网络中可访问。
+
+### 1. 发布后端镜像
+
+手动发布多架构镜像：
+
+```bash
+docker login
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag your-dockerhub-user/news-backend:1.0.0 \
+  --tag your-dockerhub-user/news-backend:latest \
+  --push \
+  ./backend
+```
+
+仓库也提供 `.github/workflows/docker-publish.yml`。在 GitHub 仓库中配置以下 Secrets：
+
+- `DOCKERHUB_USERNAME`：Docker Hub 用户名
+- `DOCKERHUB_TOKEN`：具有镜像推送权限的 Access Token
+
+推送版本标签后会自动发布版本镜像和 `latest`：
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### 2. 准备云服务器
+
+部署前需要满足：
+
+- 域名 A/AAAA 记录已指向云服务器。
+- 云平台安全组和服务器防火墙已开放 TCP 80、443。
+- 服务器已安装 Docker Engine、Docker Compose v2 和 OpenSSL。
+- 80/443 未被服务器上的其他 Web 服务占用。
+
+在服务器拉取代码后创建部署环境文件：
+
+```bash
+cp .env.example .env
+vi .env
+```
+
+至少需要修改：
+
+- `BACKEND_IMAGE`：已发布的完整 Docker Hub 镜像与版本。
+- `DOMAIN`：后端 API 域名，例如 `api.example.com`。
+- `LETSENCRYPT_EMAIL`：证书到期通知邮箱。
+- MySQL root、应用账号和 Redis 的三个强密码。
+- `KIMI_API_KEY`：需要启用 AI 接口时填写。
+
+`.env` 中包含 `#`、空格或 `$` 的值应使用单引号包裹。实际 `.env` 和证书目录已被 Git 忽略。
+
+### 3. 首次启动和签发 HTTPS
+
+首次部署必须运行初始化脚本，不能直接启动 Nginx。脚本会创建短期临时证书、启动依赖服务、申请 Let's Encrypt 正式证书，然后重新加载 Nginx：
+
+```bash
+sh deploy/init-letsencrypt.sh .env
+```
+
+成功后检查服务：
+
+```bash
+docker compose ps
+docker compose logs --tail=100 backend mysql redis nginx certbot
+curl https://api.example.com/health
+```
+
+正常健康检查结果中 `database` 和 `redis` 均为 `ok`。前端生产变量应设置为：
+
+```dotenv
+VITE_API_BASE_URL=https://api.example.com
+```
+
+### 4. 日常发布和运维
+
+更新后端版本：
+
+```bash
+# 修改 .env 中的 BACKEND_IMAGE 标签后执行
+docker compose pull backend
+docker compose up -d backend nginx
+```
+
+查看日志和状态：
+
+```bash
+docker compose ps
+docker compose logs -f --tail=200 backend
+docker compose logs -f --tail=200 nginx
+```
+
+手动检查证书续期并重新加载 Nginx：
+
+```bash
+docker compose run --rm --entrypoint certbot certbot renew --webroot -w /var/www/certbot
+docker compose exec nginx nginx -s reload
+```
+
+Certbot 容器每 12 小时检查一次续期，Nginx 每 6 小时重新加载一次配置和证书。
+
+### 5. 数据备份与恢复
+
+备份 MySQL：
+
+```bash
+docker compose exec -T mysql sh -c \
+  'exec mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
+  > news_app.sql
+```
+
+恢复 MySQL：
+
+```bash
+docker compose exec -T mysql sh -c \
+  'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
+  < news_app.sql
+```
+
+Redis 当前只存放可重建的缓存，但仍通过 `redis_data` 卷和 AOF 保留重启前的数据。MySQL 初始化 SQL 只会在 `mysql_data` 为空时执行；普通重启不会重复导入演示数据。删除数据卷会永久删除数据库数据，生产环境不要执行 `docker compose down -v`。
+
+---
+
 ## 本地开发
 
 ### 后端
@@ -507,6 +634,11 @@ npm run dev
 | 变量 | 说明 | 默认值 |
 |---|---|---|
 | `DATABASE_URL` | MySQL 连接字符串 | `mysql+aiomysql://root:123456@localhost:3306/news_app` |
+| `DB_HOST` | 未设置 DATABASE_URL 时使用的 MySQL 主机 | `localhost` |
+| `DB_PORT` | 未设置 DATABASE_URL 时使用的 MySQL 端口 | `3306` |
+| `DB_NAME` | 未设置 DATABASE_URL 时使用的数据库名 | `news_app` |
+| `DB_USER` | 未设置 DATABASE_URL 时使用的数据库账号 | `root` |
+| `DB_PASSWORD` | 未设置 DATABASE_URL 时使用的数据库密码 | `123456` |
 | `REDIS_URL` | Redis 连接字符串（Railway 注入） | — |
 | `REDIS_HOST` | Redis 主机（REDIS_URL 不存在时使用） | `localhost` |
 | `REDIS_PORT` | Redis 端口 | `6379` |

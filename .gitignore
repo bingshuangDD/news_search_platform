@@ -10,3 +10,7 @@ RAG_EXPLAINED.md
 RAG_IMPLEMENTATION_SPEC.md
 INTERVIEW_QA.md
 docs/
+.workbuddy/
+trash_text/
+deploy/certbot/conf/
+deploy/certbot/www/
