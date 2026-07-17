@@ -2,6 +2,8 @@
 -- 创建数据库
 
 -- 用户表
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户ID',
   `username` VARCHAR(50) NOT NULL COMMENT '用户名',
