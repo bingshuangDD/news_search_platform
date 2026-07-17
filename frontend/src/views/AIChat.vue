@@ -119,7 +119,7 @@ const sendMessage = async () => {
         })();
 
     const endpoint = chatMode.value === 'rag'
-      ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '/api/ai/ask'
+      ? aiChatConfig.ragEndpoint
       : apiEndpoint.value;
 
     await fetchAIResponse(endpoint, body);
