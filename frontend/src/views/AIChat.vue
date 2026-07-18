@@ -1,20 +1,34 @@
 <template>
   <div class="ai-chat-container">
-    <van-nav-bar title="AI问答" fixed />
+    <van-nav-bar :title="$t('aiChat.title')" fixed />
 
-    <!-- 模式切换标签 -->
-    <div class="chat-mode-tabs">
-      <van-tabs v-model:active="chatMode" type="card">
-        <van-tab name="rag" title="📰 新闻问答" />
-        <van-tab name="free" title="💬 自由聊天" />
-      </van-tabs>
+    <!-- 模式切换 -->
+    <div class="chat-mode-bar">
+      <div class="mode-pills">
+        <button
+          class="mode-pill"
+          :class="{ active: chatMode === 'rag' }"
+          @click="chatMode = 'rag'"
+        >
+          <van-icon name="newspaper-o" class="pill-icon" />
+          <span>{{ $t('aiChat.ragMode') }}</span>
+        </button>
+        <button
+          class="mode-pill"
+          :class="{ active: chatMode === 'free' }"
+          @click="chatMode = 'free'"
+        >
+          <van-icon name="chat-o" class="pill-icon" />
+          <span>{{ $t('aiChat.freeMode') }}</span>
+        </button>
+      </div>
     </div>
 
     <div class="chat-content">
       <div class="messages-container" ref="messagesContainer">
-        <div 
-          v-for="(message, index) in messages" 
-          :key="index" 
+        <div
+          v-for="message in messages"
+          :key="message.id"
           :class="['message', message.role === 'user' ? 'user-message' : 'ai-message']"
         >
           <div class="message-content">
@@ -27,199 +41,208 @@
           </div>
         </div>
       </div>
-      
+
       <div class="input-container">
         <van-field
           v-model="userInput"
           rows="1"
           autosize
           type="textarea"
-          placeholder="请输入问题..."
+          :placeholder="$t('aiChat.placeholder')"
           class="chat-input"
+          maxlength="500"
+          show-word-limit
           @keypress.enter.prevent="sendMessage"
         />
-        <van-button 
-          type="primary" 
-          class="send-button" 
-          :disabled="isLoading || !userInput.trim()" 
+        <van-button
+          type="primary"
+          class="send-button"
+          :disabled="isLoading || !userInput.trim()"
           @click="sendMessage"
         >
-          发送
+          <van-icon name="send" size="18" />
         </van-button>
       </div>
     </div>
-    
+
     <tab-bar />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
-import TabBar from '../components/TabBar.vue';
-import { showToast } from 'vant';
-import * as marked from 'marked';
-import DOMPurify from 'dompurify';
-import { aiChatConfig } from '../config/api';
+import { ref, onMounted, nextTick, watch } from 'vue'
+import TabBar from '../components/TabBar.vue'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import { aiChatConfig } from '../config/api'
+import { useI18n } from 'vue-i18n'
 
-// 聊天消息
+const { t } = useI18n()
+
+let messageId = 0
+const generateId = () => ++messageId
+
 const messages = ref([
-  { role: 'assistant', content: '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！' }
-]);
-const userInput = ref('');
-const messagesContainer = ref(null);
-const isLoading = ref(false);
-const chatMode = ref('rag');  // 'rag' | 'free'
+  {
+    id: generateId(),
+    role: 'assistant',
+    content: t('aiChat.ragWelcome')
+  }
+])
+const userInput = ref('')
+const messagesContainer = ref(null)
+const isLoading = ref(false)
+const chatMode = ref('rag')
 
-// 切换模式时重置对话
 const onModeChange = (name) => {
   messages.value = [
-    { role: 'assistant', content: name === 'rag'
-      ? '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！'
-      : '你好！我是AI助手，有什么可以帮助你的吗？'
+    {
+      id: generateId(),
+      role: 'assistant',
+      content: name === 'rag' ? t('aiChat.ragWelcome') : t('aiChat.freeWelcome')
     }
-  ];
-};
+  ]
+}
 
-// 从配置文件获取API设置
-const apiEndpoint = ref(aiChatConfig.apiEndpoint);
-const apiKey = ref(aiChatConfig.apiKey);
-const model = ref(aiChatConfig.model);
-
-// 格式化消息内容（支持Markdown）
 const formatMessage = (content) => {
-  if (!content) return '';
-  // 使用marked解析Markdown，并用DOMPurify清理HTML
-  return DOMPurify.sanitize(marked.parse(content));
-};
-
-// 发送消息
-const sendMessage = async () => {
-  if (!userInput.value.trim() || isLoading.value) return;
-  
-  // 添加用户消息
-  const userMessage = userInput.value.trim();
-  messages.value.push({ role: 'user', content: userMessage });
-  userInput.value = '';
-  
-  // 添加AI消息占位
-  messages.value.push({ role: 'assistant', content: '' });
-  
-  // 滚动到底部
-  await nextTick();
-  scrollToBottom();
-  
-  // 发送请求
-  isLoading.value = true;
+  if (!content) return ''
   try {
-    const body = chatMode.value === 'rag'
-      ? JSON.stringify({ question: userMessage, top_k: 3 })
-      : (() => {
-          const allMessages = messages.value.slice(0, -1).map(msg => ({ role: msg.role, content: msg.content }));
-          return JSON.stringify({ model: model.value, messages: allMessages, stream: true });
-        })();
-
-    const endpoint = chatMode.value === 'rag'
-      ? aiChatConfig.ragEndpoint
-      : apiEndpoint.value;
-
-    await fetchAIResponse(endpoint, body);
-  } catch (error) {
-    console.error('Error fetching AI response:', error);
-    // 更新最后一条消息为错误信息
-    messages.value[messages.value.length - 1].content = `发生错误: ${error.message || '请检查网络连接和API设置'}`;
-  } finally {
-    isLoading.value = false;
-    await nextTick();
-    scrollToBottom();
+    return DOMPurify.sanitize(marked.parse(content))
+  } catch {
+    return DOMPurify.sanitize(content)
   }
-};
+}
 
-// 获取AI响应（使用SSE）
+const sendMessage = async () => {
+  if (!userInput.value.trim() || isLoading.value) return
+
+  const userMessage = userInput.value.trim()
+  messages.value.push({
+    id: generateId(),
+    role: 'user',
+    content: userMessage
+  })
+  userInput.value = ''
+
+  messages.value.push({
+    id: generateId(),
+    role: 'assistant',
+    content: ''
+  })
+
+  await nextTick()
+  scrollToBottom()
+
+  isLoading.value = true
+  try {
+    const body =
+      chatMode.value === 'rag'
+        ? JSON.stringify({ question: userMessage, top_k: 3 })
+        : JSON.stringify({
+            model: aiChatConfig.model,
+            messages: messages.value.slice(0, -1).map((msg) => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            stream: true
+          })
+
+    const endpoint =
+      chatMode.value === 'rag' ? aiChatConfig.ragEndpoint : aiChatConfig.apiEndpoint
+
+    await fetchAIResponse(endpoint, body)
+  } catch (error) {
+    const errorMessage = error.message || t('aiChat.networkError')
+    messages.value[messages.value.length - 1].content = t('aiChat.error', { message: errorMessage })
+  } finally {
+    isLoading.value = false
+    await nextTick()
+    scrollToBottom()
+  }
+}
+
 const fetchAIResponse = async (endpoint, body) => {
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: body,
-    });
-    
+      body: body
+    })
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `HTTP error! status: ${response.status}`);
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error?.message || `HTTP error! status: ${response.status}`)
     }
-    
-    // 处理SSE流
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let aiResponse = '';
-  
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6);
-        if (data === '[DONE]') continue;
-        
-        try {
-          const json = JSON.parse(data);
-          // 适配阿里云DashScope的返回格式
-          const content = json.choices?.[0]?.delta?.content || 
-                         json.output?.text || 
-                         json.choices?.[0]?.message?.content || '';
-          if (content) {
-            aiResponse += content;
-            // 更新最后一条消息
-            messages.value[messages.value.length - 1].content = aiResponse;
-            await nextTick();
-            scrollToBottom();
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let aiResponse = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6)
+          if (data === '[DONE]') continue
+
+          try {
+            const json = JSON.parse(data)
+            const content =
+              json.choices?.[0]?.delta?.content ||
+              json.output?.text ||
+              json.choices?.[0]?.message?.content ||
+              ''
+            if (content) {
+              aiResponse += content
+              messages.value[messages.value.length - 1].content = aiResponse
+              await nextTick()
+              scrollToBottom()
+            }
+          } catch {
+            // 忽略无法解析的 SSE 数据
           }
-        } catch (e) {
-          console.error('Error parsing SSE data:', e);
         }
       }
     }
-  }
-  
-  // 如果没有收到任何内容
-  if (!aiResponse) {
-    messages.value[messages.value.length - 1].content = '抱歉，我无法生成回复。请检查API设置或稍后再试。';
-  }
-  } catch (error) {
-    console.error('Fetch error:', error);
-    throw error;
-  }
-};
 
-// 滚动到底部
+    if (!aiResponse) {
+      messages.value[messages.value.length - 1].content = t('aiChat.emptyResponse')
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
 const scrollToBottom = () => {
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
-};
+}
 
-// 监听消息变化，自动滚动
-watch(messages, () => {
-  nextTick(scrollToBottom);
-}, { deep: true });
+watch(
+  messages,
+  () => {
+    nextTick(scrollToBottom)
+  },
+  { deep: true }
+)
 
-// 监听模式切换
 watch(chatMode, (newMode) => {
-  onModeChange(newMode);
-});
+  onModeChange(newMode)
+})
 
-// 组件挂载时滚动到底部
 onMounted(() => {
-  scrollToBottom();
-});
+  scrollToBottom()
+})
 </script>
 
 <style scoped>
@@ -230,9 +253,53 @@ onMounted(() => {
   padding-top: 46px;
   padding-bottom: 50px;
   box-sizing: border-box;
-  background-color: var(--background-color);
+  background-color: var(--bg-base);
 }
 
+:deep(.van-nav-bar) {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== 模式切换 ===== */
+.chat-mode-bar {
+  background-color: var(--bg-surface);
+  padding: 10px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.mode-pills {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.mode-pill.active {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.pill-icon {
+  font-size: 14px;
+}
+
+/* ===== 聊天内容 ===== */
 .chat-content {
   flex: 1;
   display: flex;
@@ -243,13 +310,13 @@ onMounted(() => {
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 10px;
+  padding: 12px 16px;
 }
 
 .message {
-  margin-bottom: 10px;
-  max-width: 80%;
-  animation: fadeSlideUp 0.3s ease both;
+  margin-bottom: 12px;
+  max-width: 82%;
+  animation: fadeSlideUp 0.2s ease both;
 }
 
 .user-message {
@@ -261,23 +328,65 @@ onMounted(() => {
 }
 
 .message-content {
-  padding: 12px 14px;
+  padding: 10px 14px;
   word-break: break-word;
   font-size: 15px;
   line-height: 1.55;
 }
 
 .user-message .message-content {
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
-  color: white;
-  border-radius: 16px 16px 4px 16px;
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
 }
 
 .ai-message .message-content {
-  background-color: #FFFFFF;
-  color: #1E293B;
-  border-radius: 16px 16px 16px 4px;
-  box-shadow: var(--shadow-card);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+/* ===== Markdown 内容样式 ===== */
+.message-content :deep(p) {
+  margin: 0 0 8px;
+}
+
+.message-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.message-content :deep(pre) {
+  background-color: var(--bg-hover);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.message-content :deep(code) {
+  background-color: var(--bg-hover);
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.user-message .message-content :deep(pre),
+.user-message .message-content :deep(code) {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.message-content :deep(a) {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.message-content :deep(img) {
+  max-width: 100%;
+  border-radius: var(--radius-md);
 }
 
 /* ===== 输入区 ===== */
@@ -285,20 +394,25 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   padding: 10px 12px;
-  background-color: #fff;
+  background-color: var(--bg-surface);
   gap: 8px;
-  box-shadow: 0 -1px 3px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 -1px 0 var(--border-color);
 }
 
 .input-container :deep(.van-field) {
   flex: 1;
-  background: #F1F5F9;
-  border-radius: 24px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-pill);
   padding: 8px 16px;
 }
 
 .input-container :deep(.van-field__control) {
   background: transparent;
+  color: var(--text-primary);
+}
+
+.input-container :deep(.van-field__word-limit) {
+  color: var(--text-tertiary);
 }
 
 .chat-input {
@@ -308,9 +422,9 @@ onMounted(() => {
 .send-button {
   width: 44px;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   flex-shrink: 0;
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.15s ease;
 }
 
@@ -318,46 +432,17 @@ onMounted(() => {
   transform: scale(0.92);
 }
 
-.send-button :deep(.van-button__text) {
-  font-size: 14px;
-}
-
-/* ===== Markdown 内容样式 ===== */
-.message-content pre {
-  background-color: rgba(0, 0, 0, 0.06);
-  padding: 10px;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin: 8px 0;
-}
-
-.message-content code {
-  background-color: rgba(0, 0, 0, 0.06);
-  padding: 2px 5px;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.user-message .message-content pre,
-.user-message .message-content code {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.message-content img {
-  max-width: 100%;
-}
-
 /* ===== 打字指示器 ===== */
 .typing-indicator {
   display: flex;
-  padding: 6px;
+  padding: 6px 4px;
   gap: 4px;
 }
 
 .typing-indicator span {
   height: 8px;
   width: 8px;
-  background-color: #94A3B8;
+  background-color: var(--text-tertiary);
   border-radius: 50%;
   display: inline-block;
   animation: bounce 1.5s infinite ease-in-out;
@@ -378,67 +463,5 @@ onMounted(() => {
   30% {
     transform: translateY(-5px);
   }
-}
-
-/* ===== 模式切换标签 ===== */
-.chat-mode-tabs {
-  background: #fff;
-  padding: 4px 0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-}
-
-.chat-mode-tabs :deep(.van-tabs__nav--card) {
-  margin: 0 12px;
-  background: #F1F5F9;
-  border-radius: 12px;
-  border: none;
-}
-
-.chat-mode-tabs :deep(.van-tabs__nav--card .van-tab) {
-  border: none;
-  background: transparent;
-  color: #64748B;
-  border-radius: 10px;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-
-.chat-mode-tabs :deep(.van-tabs__nav--card .van-tab--active) {
-  background: #FFFFFF;
-  color: #4F46E5;
-  font-weight: 600;
-  box-shadow: var(--shadow-card);
-}
-
-/* ===== 深色模式适配 ===== */
-body.theme-dark .message-content pre,
-body.theme-dark .message-content code {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-body.theme-dark .ai-message .message-content {
-  background-color: #1E293B;
-  color: #F8FAFC;
-}
-
-body.theme-dark .input-container {
-  background-color: #1E293B;
-}
-
-body.theme-dark .input-container :deep(.van-field) {
-  background: #334155;
-}
-
-body.theme-dark .chat-mode-tabs {
-  background: #1E293B;
-}
-
-body.theme-dark .chat-mode-tabs :deep(.van-tabs__nav--card) {
-  background: #334155;
-}
-
-body.theme-dark .chat-mode-tabs :deep(.van-tabs__nav--card .van-tab--active) {
-  background: #475569;
-  color: #818CF8;
 }
 </style>

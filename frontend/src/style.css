@@ -1,6 +1,9 @@
 /* ===== 移动端适配基础样式 ===== */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* ===== 字体系统 ===== */
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -28,84 +31,116 @@
   /* ===== 语义色 ===== */
   --color-success: #10B981;
   --color-warning: #F59E0B;
+  --color-warning-light: rgba(245, 158, 11, 0.12);
   --color-danger:  #EF4444;
 
-  /* ===== 主题变量（向后兼容 + 新设计系统） ===== */
-  --primary-color: #4F46E5;
-  --primary-light: #818CF8;
-  --primary-deep: #3730A3;
-  --text-color: #1E293B;
-  --text-color-light: #64748B;
-  --text-color-lighter: #94A3B8;
+  /* ===== 核心设计 token（所有组件必须使用） ===== */
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --primary-soft: #C7D2FE;
+  --primary-dark: #3730A3;
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+  --text-disabled: #CBD5E1;
+  --text-inverse: #FFFFFF;
+
+  --bg-base: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-hover: #F1F5F9;
+  --bg-pressed: #E2E8F0;
+
   --border-color: #E2E8F0;
-  --background-color: #F8FAFC;
-  --surface-color: #FFFFFF;
+  --divider-color: #F1F5F9;
+  --preview-line: rgba(15, 23, 42, 0.08);
+  --preview-line-light: rgba(15, 23, 42, 0.06);
+
+  /* ===== 向后兼容的旧变量名 ===== */
+  --primary-color: var(--primary);
+  --primary-deep: var(--primary-dark);
+  --text-color: var(--text-primary);
+  --text-color-light: var(--text-secondary);
+  --text-color-lighter: var(--text-tertiary);
+  --background-color: var(--bg-base);
+  --surface-color: var(--bg-surface);
   --white: #fff;
+
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-top: env(safe-area-inset-top);
+
+  /* ===== 统一圆角系统 ===== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ===== 统一阴影系统 ===== */
+  --shadow-sm:
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg:
+    0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-float:
+    0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-modal:
+    0 16px 40px rgba(15, 23, 42, 0.12);
+
+  /* 旧变量名兼容 */
+  --shadow-card: var(--shadow-md);
 
   /* ===== Vant 核心变量覆盖 ===== */
-  --van-primary-color: #4F46E5;
-  --van-success-color: #10B981;
-  --van-warning-color: #F59E0B;
-  --van-danger-color: #EF4444;
+  --van-primary-color: var(--primary);
+  --van-success-color: var(--color-success);
+  --van-warning-color: var(--color-warning);
+  --van-danger-color: var(--color-danger);
 
-  /* 圆角系统 */
-  --van-border-radius-sm: 8px;
-  --van-border-radius-md: 12px;
-  --van-border-radius-lg: 16px;
-  --van-border-radius-max: 20px;
+  --van-background: var(--bg-base);
+  --van-background-2: var(--bg-surface);
 
-  /* 背景 */
-  --van-background: #F8FAFC;
-  --van-background-2: #FFFFFF;
+  --van-text-color: var(--text-primary);
+  --van-text-color-2: var(--text-secondary);
+  --van-text-color-3: var(--text-tertiary);
 
-  /* 文字 */
-  --van-text-color: #1E293B;
-  --van-text-color-2: #64748B;
-  --van-text-color-3: #94A3B8;
+  --van-border-color: var(--border-color);
 
-  /* 边框/分割线 */
-  --van-border-color: #E2E8F0;
+  /* 圆角 */
+  --van-border-radius-sm: var(--radius-sm);
+  --van-border-radius-md: var(--radius-md);
+  --van-border-radius-lg: var(--radius-lg);
+  --van-border-radius-max: var(--radius-pill);
 
   /* 按钮 */
-  --van-button-primary-background: #4F46E5;
-  --van-button-primary-border-color: #4F46E5;
-  --van-button-radius: 12px;
+  --van-button-primary-background: var(--primary);
+  --van-button-primary-border-color: var(--primary);
+  --van-button-radius: var(--radius-md);
   --van-button-default-height: 44px;
 
   /* 导航栏 */
-  --van-nav-bar-background: #FFFFFF;
-  --van-nav-bar-title-text-color: #0F172A;
+  --van-nav-bar-background: var(--bg-surface);
+  --van-nav-bar-title-text-color: var(--text-primary);
   --van-nav-bar-title-font-weight: 600;
+  --van-nav-bar-icon-color: var(--text-secondary);
 
   /* Tab */
-  --van-tab-active-text-color: #4F46E5;
-  --van-tabs-bottom-bar-color: #4F46E5;
+  --van-tab-active-text-color: var(--primary);
+  --van-tabs-bottom-bar-color: var(--primary);
   --van-tab-font-weight: 500;
 
   /* Cell */
   --van-cell-background: transparent;
-  --van-cell-group-background: #FFFFFF;
-  --van-cell-group-inset-radius: 16px;
+  --van-cell-group-background: var(--bg-surface);
+  --van-cell-group-inset-radius: var(--radius-lg);
   --van-cell-group-inset-padding: 4px 0;
 
   /* Field 输入框 */
-  --van-field-label-color: #475569;
+  --van-field-label-color: var(--text-secondary);
 
-  /* ===== 阴影系统（Layered Shadow） ===== */
-  --shadow-card:
-    0 1px 3px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.06);
-  --shadow-float:
-    0 4px 6px rgba(15, 23, 42, 0.03),
-    0 10px 20px rgba(15, 23, 42, 0.08);
-  --shadow-modal:
-    0 10px 25px rgba(15, 23, 42, 0.10),
-    0 20px 48px rgba(15, 23, 42, 0.05);
-
-  color-scheme: light dark;
-  color: var(--text-color);
-  background-color: var(--background-color);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -114,30 +149,104 @@
   -webkit-text-size-adjust: 100%;
 }
 
-/* 移动端适配 */
+/* ===== 深色模式 ===== */
+:root[data-theme='dark'],
+body.theme-dark {
+  --primary: #818CF8;
+  --primary-light: rgba(129, 140, 248, 0.15);
+  --primary-soft: rgba(129, 140, 248, 0.3);
+  --primary-dark: #A5B4FC;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-disabled: #475569;
+  --text-inverse: #0F172A;
+
+  --bg-base: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-surface-elevated: #27354F;
+  --bg-hover: #27354F;
+  --bg-pressed: #334155;
+
+  --border-color: #334155;
+  --divider-color: #1E293B;
+  --preview-line: rgba(248, 250, 252, 0.08);
+  --preview-line-light: rgba(248, 250, 252, 0.06);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-modal: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-card: var(--shadow-md);
+
+  /* Vant 深色变量 */
+  --van-primary-color: var(--primary);
+  --van-background: var(--bg-base);
+  --van-background-2: var(--bg-surface);
+  --van-text-color: var(--text-primary);
+  --van-text-color-2: var(--text-secondary);
+  --van-text-color-3: var(--text-tertiary);
+  --van-border-color: var(--border-color);
+  --van-nav-bar-background: var(--bg-surface);
+  --van-nav-bar-title-text-color: var(--text-primary);
+  --van-nav-bar-icon-color: var(--text-secondary);
+  --van-tab-active-text-color: var(--primary);
+  --van-tabs-bottom-bar-color: var(--primary);
+  --van-button-primary-background: var(--primary);
+  --van-button-primary-border-color: var(--primary);
+  --van-cell-group-background: var(--bg-surface);
+}
+
+/* ===== 基础重置 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
 html {
   -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
 }
 
 body {
   font-size: 14px;
-  color: var(--text-color);
-  background-color: var(--background-color);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* 适配iPhone底部安全区域 */
+#app,
+.app {
+  max-width: 750px;
+  margin: 0 auto;
+  min-height: 100%;
+  background-color: var(--bg-base);
+}
+
+/* ===== 安全区域 ===== */
 .van-tabbar {
   padding-bottom: var(--safe-area-inset-bottom);
 }
 
-/* 滚动条优化 */
+.van-nav-bar--fixed {
+  padding-top: var(--safe-area-inset-top);
+}
+
+/* ===== 滚动条 ===== */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -145,16 +254,31 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ddd;
-  border-radius: 3px;
+  background: var(--border-color);
+  border-radius: 2px;
 }
 
-/* 页面过渡动画 */
+/* ===== 页面转场动画 ===== */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .slide-right-enter-active,
 .slide-right-leave-active,
 .slide-left-enter-active,
 .slide-left-leave-active {
-  transition: all 0.3s;
+  transition: all 0.25s ease;
 }
 
 .slide-right-enter-from {
@@ -177,7 +301,7 @@ body {
   transform: translate3d(-100%, 0, 0);
 }
 
-/* 文本溢出省略号 */
+/* ===== 文本工具类 ===== */
 .ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,6 +316,14 @@ body {
   overflow: hidden;
 }
 
+.ellipsis-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
 /* ===== 骨架屏动画 ===== */
 @keyframes skeleton-loading {
   0% {
@@ -203,12 +335,12 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #F8FAFC 25%, #EEF2FF 37%, #F8FAFC 63%);
+  background: linear-gradient(90deg, var(--bg-base) 25%, var(--primary-light) 37%, var(--bg-base) 63%);
   background-size: 400% 100%;
   animation: skeleton-loading 1.4s ease infinite;
 }
 
-/* ===== 微交互：全局点击反馈 ===== */
+/* ===== 点击反馈 ===== */
 .clickable {
   transition: transform 0.15s ease, opacity 0.15s ease;
   cursor: pointer;
@@ -217,40 +349,6 @@ body {
 .clickable:active {
   transform: scale(0.97);
   opacity: 0.9;
-}
-
-/* 点击波纹效果 */
-.click-effect {
-  position: relative;
-  overflow: hidden;
-}
-
-.click-effect::after {
-  content: '';
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10, 10);
-  opacity: 0;
-  transition: transform 0.5s, opacity 1s;
-}
-
-.click-effect:active::after {
-  transform: scale(0, 0);
-  opacity: 0.1;
-  transition: 0s;
-}
-
-/* ===== 滚动行为优化 ===== */
-html {
-  scroll-behavior: smooth;
 }
 
 /* ===== 列表进入动画 ===== */
@@ -265,24 +363,24 @@ html {
   }
 }
 
-/* ===== 深色主题全局覆盖 ===== */
-body.theme-dark {
-  --van-primary-color: #818CF8;
-  --van-background: #0F172A;
-  --van-background-2: #1E293B;
-  --van-text-color: #F8FAFC;
-  --van-text-color-2: #94A3B8;
-  --van-text-color-3: #64748B;
-  --van-border-color: #334155;
-  --van-nav-bar-background: #1E293B;
-  --van-nav-bar-title-text-color: #F8FAFC;
-  --shadow-card:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-float:
-    0 4px 6px rgba(0, 0, 0, 0.2),
-    0 10px 20px rgba(0, 0, 0, 0.3);
-  --shadow-modal:
-    0 10px 25px rgba(0, 0, 0, 0.4),
-    0 20px 48px rgba(0, 0, 0, 0.3);
+.fade-slide-up {
+  animation: fadeSlideUp 0.25s ease both;
+}
+
+/* ===== 通用卡片 ===== */
+.surface-card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== 减少动画偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

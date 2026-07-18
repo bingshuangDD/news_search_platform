@@ -12,12 +12,39 @@ export default {
     login: '登录',
     register: '注册',
     logout: '退出登录',
-    allCategories: '全部分类'
+    allCategories: '全部分类',
+    retry: '重新加载',
+    saveFailed: '保存失败，请稍后重试',
+    deleteFailed: '删除失败，请稍后重试'
   },
   nav: {
     home: '首页',
     aiChat: 'AI问答',
-    my: '我的'
+    my: '我的',
+    newsDetail: '新闻详情'
+  },
+  newsDetail: {
+    related: '相关推荐',
+    loadFailed: '加载失败，请重试',
+    loginToFavorite: '请先登录后再收藏',
+    addedToFavorite: '已添加到收藏',
+    removedFromFavorite: '已取消收藏',
+    favoriteFailed: '操作失败，请稍后重试',
+    copySuccess: '标题已复制',
+    copyFailed: '复制失败'
+  },
+  newsItem: {
+    views: '阅读',
+    tenThousand: '万'
+  },
+  appEmpty: {
+    noData: '暂无数据'
+  },
+  theme: {
+    light: '浅色模式',
+    dark: '深色模式',
+    violet: '紫罗兰',
+    emerald: '森林绿'
   },
   home: {
     title: '新闻资讯',
@@ -25,6 +52,12 @@ export default {
     refresh: '刷新',
     loadMore: '加载更多',
     noMore: '没有更多了',
+    favorite: '收藏',
+    cancelFavorite: '取消收藏',
+    share: '分享',
+    shareSuccess: '链接已复制',
+    shareFailed: '分享失败',
+    swipeActions: '快捷操作',
     categories: {
       headline: '头条',
       society: '社会',
@@ -43,11 +76,36 @@ export default {
     placeholder: '请输入您的问题...',
     send: '发送',
     thinking: 'AI思考中...',
-    // 以下为 RAG 新增
     ragMode: '新闻问答',
     freeMode: '自由聊天',
     ragWelcome: '你好！我是新闻问答助手，可以基于本站新闻内容回答你的问题。试试问"最近有什么科技新闻"吧！',
     freeWelcome: '你好！我是AI助手，有什么可以帮助你的吗？',
+    error: '发生错误: {message}',
+    networkError: '请检查网络连接和API设置',
+    emptyResponse: '抱歉，我无法生成回复。请检查API设置或稍后再试。'
+  },
+  favorite: {
+    title: '我的收藏',
+    clear: '清空',
+    empty: '暂无收藏内容',
+    goHome: '去首页看看',
+    confirmDelete: '确定要删除这条收藏吗？',
+    confirmClear: '确定要清空所有收藏吗？',
+    favoriteAt: '收藏于',
+    clearFailed: '清空失败，请稍后重试',
+    delete: '删除'
+  },
+  history: {
+    title: '浏览历史',
+    clear: '清空',
+    empty: '暂无浏览历史',
+    goHome: '去首页看看',
+    confirmDelete: '确定要删除这条浏览记录吗？',
+    confirmClear: '确定要清空所有浏览历史吗？',
+    viewAt: '浏览于',
+    deleteFailed: '删除失败，请稍后重试',
+    clearFailed: '清空失败，请稍后重试',
+    delete: '删除'
   },
   my: {
     title: '我的',
@@ -73,12 +131,74 @@ export default {
     selectTheme: '选择主题',
     themeChanged: '主题已更改',
     languageChanged: '语言设置已更改，部分更改将在重启应用后生效',
-    selectLanguage: '选择语言'
+    selectLanguage: '选择语言',
+    languages: {
+      zhCN: '简体中文',
+      enUS: 'English'
+    }
   },
   profile: {
     title: '个人信息',
+    avatar: '头像',
     username: '用户名',
+    userId: '账号ID',
     bio: '个人简介',
-    save: '保存修改'
+    bioEmpty: '暂无简介',
+    editBio: '修改个人简介',
+    bioPlaceholder: '写点什么介绍自己吧',
+    bioRequired: '请输入个人简介',
+    save: '保存修改',
+    changePassword: '修改密码',
+    oldPassword: '当前密码',
+    newPassword: '新密码',
+    confirmPassword: '确认密码',
+    oldPasswordPlaceholder: '请输入当前密码',
+    newPasswordPlaceholder: '请输入新密码',
+    confirmPasswordPlaceholder: '请再次输入新密码',
+    oldPasswordRequired: '请输入当前密码',
+    newPasswordRequired: '请输入新密码',
+    confirmPasswordRequired: '请确认新密码',
+    passwordMismatch: '两次输入的密码不一致',
+    loadFailed: '获取用户信息失败',
+    bioUpdateSuccess: '个人简介修改成功',
+    bioUpdateFailed: '个人简介修改失败',
+    passwordUpdateSuccess: '密码修改成功',
+    passwordUpdateFailed: '密码修改失败'
+  },
+  login: {
+    title: '用户登录',
+    slogan: '随时随地，掌握资讯',
+    username: '用户名',
+    password: '密码',
+    usernamePlaceholder: '请输入用户名',
+    passwordPlaceholder: '请输入密码',
+    usernameRequired: '请填写用户名',
+    passwordRequired: '请填写密码',
+    submit: '登录',
+    demoAccount: '测试账号',
+    demoPassword: '测试密码',
+    noAccount: '还没有账号？',
+    goRegister: '去注册',
+    loggingIn: '登录中...',
+    failed: '登录失败，请稍后再试'
+  },
+  register: {
+    title: '用户注册',
+    slogan: '创建账号，开启资讯之旅',
+    username: '用户名',
+    password: '密码',
+    confirmPassword: '确认密码',
+    usernamePlaceholder: '请输入用户名',
+    passwordPlaceholder: '请输入密码',
+    confirmPasswordPlaceholder: '请再次输入密码',
+    usernameRequired: '请填写用户名',
+    passwordRequired: '请填写密码',
+    confirmPasswordRequired: '请确认密码',
+    passwordMismatch: '两次密码不一致',
+    submit: '注册',
+    hasAccount: '已有账号？',
+    goLogin: '去登录',
+    registering: '注册中...',
+    failed: '注册失败，请稍后再试'
   }
-};
+}

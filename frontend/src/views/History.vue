@@ -1,266 +1,162 @@
 <template>
   <div class="history-container">
     <van-nav-bar
-      title="浏览历史"
-      left-text="返回"
+      :title="$t('history.title')"
       left-arrow
       @click-left="onClickLeft"
-      right-text="清空"
-      @click-right="onClickClear"
       fixed
-    />
-    
-    <div class="history-list" v-if="historyStore.getHistory.length">
-      <div class="history-item" v-for="item in historyStore.getHistory" :key="item.id">
-        <van-cell @click="goToNewsDetail(item.id)" :border="false">
-          <template #title>
-            <div class="news-item">
-              <div class="news-image" v-if="item.image">
-                <img :src="item.image" :alt="item.title">
-              </div>
-              <div class="news-info">
-                <div class="news-title">{{ item.title }}</div>
-                <div class="news-meta">
-                  <span>{{ item.author }}</span>
-                  <span>{{ item.publishTime }}</span>
-                  <span>浏览时间: {{ item.viewTime }}</span>
-                </div>
-              </div>
-            </div>
+    >
+      <template #right>
+        <span
+          class="nav-clear"
+          :class="{ disabled: !historyStore.getHistory.length }"
+          @click="onClickClear"
+        >{{ $t('history.clear') }}</span>
+      </template>
+    </van-nav-bar>
+
+    <div v-if="historyStore.getHistory.length" class="history-list">
+      <van-swipe-cell
+        v-for="item in historyStore.getHistory"
+        :key="item.id"
+        class="history-swipe-cell"
+      >
+        <news-card
+          :id="item.id"
+          :title="item.title"
+          :image="item.image"
+          :author="item.author"
+        >
+          <template #meta>
+            <span v-if="item.author">{{ item.author }}</span>
+            <span v-if="item.publishTime">{{ item.publishTime }}</span>
+            <span v-if="item.viewTime">{{ $t('history.viewAt') }} {{ item.viewTime }}</span>
           </template>
-        </van-cell>
-        <van-button 
-          class="delete-btn" 
-          type="danger" 
-          size="mini" 
-          icon="cross"
-          @click="confirmDelete(item.id)"
-        ></van-button>
-      </div>
+        </news-card>
+
+        <template #right>
+          <van-button
+            square
+            :text="$t('history.delete')"
+            type="danger"
+            class="delete-button"
+            @click="confirmDelete(item.id)"
+          />
+        </template>
+      </van-swipe-cell>
     </div>
-    
-    <van-empty v-else description="暂无浏览历史" />
+
+    <app-empty
+      v-else
+      :description="$t('history.empty')"
+      :action-text="$t('history.goHome')"
+      @action="goHome"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useHistoryStore } from '../store/modules/history';
-import { showDialog } from 'vant';
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useHistoryStore } from '../store/modules/history'
+import { showDialog, showToast } from 'vant'
+import NewsCard from '../components/NewsCard.vue'
+import AppEmpty from '../components/AppEmpty.vue'
+import { useI18n } from 'vue-i18n'
 
-const router = useRouter();
-const historyStore = useHistoryStore();
+const router = useRouter()
+const historyStore = useHistoryStore()
+const { t } = useI18n()
 
-// 返回上一页
 const onClickLeft = () => {
-  router.back();
-};
+  router.back()
+}
 
-// 跳转到新闻详情
-const goToNewsDetail = (id) => {
-  router.push(`/news/detail/${id}`);
-};
+const goHome = () => {
+  router.push('/home')
+}
 
-// 删除单条历史记录
 const removeHistory = async (id) => {
-  try {
-    const result = await historyStore.removeHistoryApi(id);
-    console.log('删除单条历史记录结果:', result);
-    
-    // 如果API请求失败且不是本地操作，则显示错误提示
-    if (!result.success && !result.isLocal) {
-      showDialog({
-        title: '提示',
-        message: result.message || '删除失败，请稍后重试',
-      });
-    }
-  } catch (error) {
-    console.error('删除历史记录失败:', error);
-    // 出错时仍然尝试本地删除
-    // historyStore.removeHistory(id);
+  const result = await historyStore.removeHistoryApi(id)
+  if (!result.success && !result.isLocal) {
+    showToast(result.message || t('history.deleteFailed'))
   }
-};
+}
 
-// 确认删除
 const confirmDelete = (id) => {
   showDialog({
-    title: '提示',
-    message: '确定要删除这条浏览记录吗？',
-    showCancelButton: true,
+    title: t('common.confirm'),
+    message: t('history.confirmDelete'),
+    showCancelButton: true
   }).then((action) => {
     if (action === 'confirm') {
-      removeHistory(id);
+      removeHistory(id)
     }
-  });
-};
+  })
+}
 
-// 清空历史记录
-const onClickClear = async () => {
+const onClickClear = () => {
+  if (!historyStore.getHistory.length) return
+
   showDialog({
-    title: '提示',
-    message: '确定要清空所有浏览历史吗？',
-    showCancelButton: true,
+    title: t('common.confirm'),
+    message: t('history.confirmClear'),
+    showCancelButton: true
   }).then(async (action) => {
     if (action === 'confirm') {
-      try {
-        const result = await historyStore.clearHistoryApi();
-        console.log('清空历史记录结果:', result);
-        
-        // 如果API请求失败且不是本地操作，则显示错误提示
-        if (!result.success && !result.isLocal) {
-          showDialog({
-            title: '提示',
-            message: result.message || '清空失败，请稍后重试',
-          });
-        }
-      } catch (error) {
-        console.error('清空历史记录失败:', error);
-        // 出错时仍然尝试本地清空
-        // historyStore.clearHistory();
+      const result = await historyStore.clearHistoryApi()
+      if (!result.success && !result.isLocal) {
+        showToast(result.message || t('history.clearFailed'))
       }
     }
-  });
-};
+  })
+}
 
-// 组件挂载时加载历史记录
 onMounted(async () => {
-  // 先尝试从API获取浏览历史
   try {
-    const result = await historyStore.getHistoryListApi();
-    console.log('浏览历史页面：API获取结果', result);
-    
-    // 如果API请求失败或用户未登录，则从本地加载
+    const result = await historyStore.getHistoryListApi()
     if (!result || !result.success) {
-      historyStore.loadHistory();
+      historyStore.loadHistory()
     }
   } catch (error) {
-    console.error('浏览历史页面：API请求异常', error);
-    // 出错时从本地加载
-    historyStore.loadHistory();
+    historyStore.loadHistory()
   }
-});
+})
 </script>
 
 <style scoped>
 .history-container {
   padding-top: 46px;
   padding-bottom: 20px;
-  background-color: var(--background-color);
+  background-color: var(--bg-base);
   min-height: 100vh;
 }
 
+:deep(.van-nav-bar) {
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-clear {
+  font-size: 14px;
+  color: var(--color-danger);
+  padding: 8px;
+}
+
+.nav-clear.disabled {
+  color: var(--text-disabled);
+  pointer-events: none;
+}
+
 .history-list {
-  padding: 10px;
+  padding: 12px 16px;
 }
 
-.news-item {
-  display: flex;
-  padding: 10px 0;
-}
-
-.news-image {
-  width: 120px;
-  height: 80px;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.news-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.news-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.news-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0F172A;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.news-meta {
-  font-size: 12px;
-  color: #94A3B8;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.news-meta span {
-  margin-right: 6px;
-}
-
-.news-meta span:not(:last-child)::after {
-  content: '·';
-  margin-left: 6px;
+.history-swipe-cell {
+  margin-bottom: 10px;
 }
 
 .delete-button {
-  width: 20px;
-  height: 20px;
-  background-color: #ee0a24;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-}
-
-.van-swipe-cell {
-  margin-bottom: 8px;
-}
-
-.history-item {
-  position: relative;
-  margin-bottom: 10px;
-  background-color: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-}
-
-.delete-btn {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  z-index: 10;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.delete-icon {
-  position: absolute;
-  top: 50%;
-  right: 15px;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f2f3f5;
-  border-radius: 50%;
-  z-index: 2;
+  height: 100%;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 </style>

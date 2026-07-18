@@ -32,8 +32,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px;
-  background-color: #F8FAFC;
-  color: #1E293B;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   height: 100%;
   width: 100%;
 }
@@ -42,22 +42,6 @@ html, body {
   max-width: 750px;
   margin: 0 auto;
   height: 100%;
-}
-
-/* ===== 页面转场动画 ===== */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 
 /* 移动端适配 */

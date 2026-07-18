@@ -1,115 +1,114 @@
 <template>
   <div class="login-page">
     <van-nav-bar
-      title="用户登录"
+      :title="$t('login.title')"
       left-arrow
       @click-left="onClickLeft"
       fixed
     />
-    
+
     <div class="login-container">
-      <div class="login-logo">
-        <van-image
-          width="80"
-          height="80"
-          src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
-          round
-        />
-        <h2>新闻资讯</h2>
+      <div class="login-brand">
+        <div class="brand-icon">
+          <van-icon name="newspaper-o" size="40" color="var(--text-inverse)" />
+        </div>
+        <h1 class="brand-name">{{ $t('home.title') }}</h1>
+        <p class="brand-slogan">{{ $t('login.slogan') }}</p>
       </div>
-      
+
       <van-form @submit="onSubmit" class="login-form">
         <van-cell-group inset>
           <van-field
             v-model="username"
             name="username"
-            label="用户名"
-            placeholder="请输入用户名"
-            :rules="[{ required: true, message: '请填写用户名' }]"
+            :label="$t('login.username')"
+            :placeholder="$t('login.usernamePlaceholder')"
+            :rules="[{ required: true, message: $t('login.usernameRequired') }]"
+            left-icon="user-o"
           />
           <van-field
             v-model="password"
             type="password"
             name="password"
-            label="密码"
-            placeholder="请输入密码"
-            :rules="[{ required: true, message: '请填写密码' }]"
+            :label="$t('login.password')"
+            :placeholder="$t('login.passwordPlaceholder')"
+            :rules="[{ required: true, message: $t('login.passwordRequired') }]"
+            left-icon="lock"
           />
         </van-cell-group>
-        
+
         <div class="submit-btn">
           <van-button round block type="primary" native-type="submit" size="large">
-            登录
+            {{ $t('login.submit') }}
           </van-button>
         </div>
-        
+
         <div class="login-tips">
-          <p>测试账号：admin</p>
-          <p>测试密码：123456</p>
+          <p>{{ $t('login.demoAccount') }}：admin</p>
+          <p>{{ $t('login.demoPassword') }}：123456</p>
         </div>
       </van-form>
+
+      <div class="register-link">
+        <span>{{ $t('login.noAccount') }}</span>
+        <span class="link" @click="goToRegister">{{ $t('login.goRegister') }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { showToast } from 'vant';
-import { useUserStore } from '../store/user';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { showToast } from 'vant'
+import { useUserStore } from '../store/user'
+import { useI18n } from 'vue-i18n'
 
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
+const { t } = useI18n()
 
-const username = ref('');
-const password = ref('');
+const username = ref('')
+const password = ref('')
 
-const onSubmit = async (values) => {
-  // 显示加载提示
+const onSubmit = async () => {
   showToast({
     type: 'loading',
-    message: '登录中...',
+    message: t('login.loggingIn'),
     forbidClick: true,
     duration: 0
-  });
-  
+  })
+
   try {
-    // 调用API登录
     const result = await userStore.login({
       username: username.value,
       password: password.value
-    });
-    
+    })
+
     if (result.success) {
-      showToast({
-        type: 'success',
-        message: result.message
-      });
-      
-      router.push('/');
+      showToast({ type: 'success', message: result.message })
+      router.replace('/home')
     } else {
-      showToast({
-        type: 'fail',
-        message: result.message
-      });
+      showToast({ type: 'fail', message: result.message })
     }
   } catch (error) {
-    showToast({
-      type: 'fail',
-      message: '登录失败，请稍后再试'
-    });
+    showToast({ type: 'fail', message: t('login.failed') })
   }
-};
+}
 
 const onClickLeft = () => {
-  router.back();
-};
+  router.back()
+}
+
+const goToRegister = () => {
+  router.push('/register')
+}
 </script>
 
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background-color: #F8FAFC;
+  background-color: var(--bg-base);
 }
 
 .login-container {
@@ -119,64 +118,86 @@ const onClickLeft = () => {
   align-items: center;
 }
 
-.login-logo {
-  margin: 40px 0;
+/* ===== 品牌区 ===== */
+.login-brand {
+  margin: 48px 0 32px;
   text-align: center;
 }
 
-.login-logo :deep(.van-image) {
-  animation: logoBreathe 3s ease-in-out infinite;
+.brand-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
 }
 
-@keyframes logoBreathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.login-logo h2 {
-  margin-top: 16px;
-  color: #0F172A;
-  font-size: 22px;
+.brand-name {
+  font-size: 24px;
   font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
 }
 
+.brand-slogan {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===== 表单 ===== */
 .login-form {
   width: 100%;
   padding: 0 16px;
 }
 
-/* ===== 表单卡片 ===== */
 .login-form :deep(.van-cell-group--inset) {
-  border-radius: 20px;
-  box-shadow: var(--shadow-modal);
-  margin: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
+  background-color: var(--bg-surface);
 }
 
 .login-form :deep(.van-cell) {
   padding: 14px 16px;
+  background-color: var(--bg-surface);
+}
+
+.login-form :deep(.van-field__left-icon) {
+  margin-right: 8px;
+  color: var(--text-tertiary);
 }
 
 .login-form :deep(.van-field__control) {
-  background: #F1F5F9;
-  border-radius: 12px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-md);
   padding: 10px 12px;
   font-size: 15px;
+  color: var(--text-primary);
 }
 
 .login-form :deep(.van-field__control::placeholder) {
-  color: #94A3B8;
+  color: var(--text-tertiary);
+}
+
+.login-form :deep(.van-field__label) {
+  color: var(--text-secondary);
+  width: 56px;
 }
 
 .submit-btn {
-  margin: 24px 16px;
+  margin: 24px 0 16px;
 }
 
 .submit-btn :deep(.van-button) {
-  border-radius: 999px;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
   border: none;
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-md);
   font-weight: 600;
   font-size: 16px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -184,17 +205,30 @@ const onClickLeft = () => {
 
 .submit-btn :deep(.van-button:active) {
   transform: scale(0.97);
-  box-shadow: var(--shadow-modal);
+  box-shadow: var(--shadow-lg);
 }
 
 .login-tips {
   text-align: center;
-  color: #94A3B8;
-  font-size: 14px;
-  margin-top: 16px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.login-tips p {
-  margin: 4px 0;
+.register-link {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.register-link .link {
+  margin-left: 6px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+:deep(.van-nav-bar) {
+  box-shadow: var(--shadow-sm);
 }
 </style>

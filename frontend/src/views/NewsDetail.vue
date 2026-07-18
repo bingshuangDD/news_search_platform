@@ -1,70 +1,128 @@
 <template>
   <div class="news-detail">
     <van-nav-bar
-      title="新闻详情"
-      left-text="返回"
+      :title="$t('nav.newsDetail')"
       left-arrow
       @click-left="onClickLeft"
       fixed
     />
-    
-    <div class="detail-content" v-if="newsStore.newsDetail.id">
+
+    <!-- 骨架屏加载态 -->
+    <div v-if="loading" class="detail-skeleton">
+      <div class="skeleton-title skeleton"></div>
+      <div class="skeleton-info skeleton"></div>
+      <div class="skeleton-cover skeleton"></div>
+      <div class="skeleton-paragraph skeleton"></div>
+      <div class="skeleton-paragraph skeleton"></div>
+      <div class="skeleton-paragraph skeleton"></div>
+    </div>
+
+    <div v-else-if="newsStore.newsDetail.id" class="detail-content">
       <div class="title-container">
-        <h1 class="title">{{ newsStore.newsDetail.title }}</h1>
-        <van-button 
-          class="favorite-btn" 
-          :icon="isFavorite ? 'star' : 'star-o'" 
-          :class="{ 'is-favorite': isFavorite }"
-          @click="toggleFavorite"
-        />
+        <h1
+          class="title"
+          @touchstart="onTitleTouchStart"
+          @touchend="onTitleTouchEnd"
+          @touchmove="onTitleTouchMove"
+          @touchcancel="onTitleTouchEnd"
+        >{{ newsStore.newsDetail.title }}</h1>
+        <div class="actions">
+          <van-button
+            class="action-btn share-btn"
+            icon="share-o"
+            :aria-label="$t('home.share')"
+            @click="shareNews"
+          />
+          <van-button
+            class="action-btn favorite-btn"
+            :icon="isFavorite ? 'star' : 'star-o'"
+            :class="{ 'is-favorite': isFavorite }"
+            :aria-label="isFavorite ? $t('home.cancelFavorite') : $t('home.favorite')"
+            @click="toggleFavorite"
+          />
+        </div>
       </div>
-      
+
       <div class="info">
-        <span>{{ newsStore.newsDetail.author }}</span>
-        <span>{{ newsStore.newsDetail.publishTime }}</span>
-        <span>{{ newsStore.newsDetail.views }} 阅读</span>
+        <span v-if="newsStore.newsDetail.author">{{ newsStore.newsDetail.author }}</span>
+        <span v-if="newsStore.newsDetail.publishTime">{{ newsStore.newsDetail.publishTime }}</span>
+        <span v-if="newsStore.newsDetail.views">{{ formatViews(newsStore.newsDetail.views) }}</span>
       </div>
-      
-      <div class="cover" v-if="newsStore.newsDetail.image">
-        <img :src="newsStore.newsDetail.image" :alt="newsStore.newsDetail.title">
+
+      <div v-if="newsStore.newsDetail.image" class="cover">
+        <van-image
+          :src="newsStore.newsDetail.image"
+          :alt="newsStore.newsDetail.title"
+          width="100%"
+          fit="cover"
+          radius="16"
+          lazy-load
+        >
+          <template #loading>
+            <div class="cover-placeholder">
+              <van-icon name="photo-o" size="32" color="var(--text-tertiary)" />
+            </div>
+          </template>
+          <template #error>
+            <div class="cover-placeholder">
+              <van-icon name="photo-fail-o" size="32" color="var(--text-tertiary)" />
+            </div>
+          </template>
+        </van-image>
       </div>
-      
+
       <div class="content">
-        <p v-for="(paragraph, index) in contentParagraphs" :key="index">
-          {{ paragraph }}
-        </p>
+        <p v-for="(paragraph, index) in contentParagraphs" :key="index">{{ paragraph }}</p>
       </div>
-      
-      <div class="related-news" v-if="newsStore.newsDetail.relatedNews?.length">
-        <h3>相关推荐</h3>
+
+      <div v-if="newsStore.newsDetail.relatedNews?.length" class="related-news">
+        <h3>{{ $t('newsDetail.related') }}</h3>
         <div class="related-list">
-          <div 
-            class="related-item" 
-            v-for="item in newsStore.newsDetail.relatedNews" 
+          <div
+            class="related-item clickable"
+            v-for="item in newsStore.newsDetail.relatedNews"
             :key="item.id"
             @click="goToRelatedNews(item.id)"
           >
             <div class="related-image">
-              <img :src="item.image" :alt="item.title">
+              <van-image
+                :src="item.image"
+                :alt="item.title"
+                width="140"
+                height="90"
+                fit="cover"
+                radius="12"
+                lazy-load
+              >
+                <template #loading>
+                  <div class="related-image-placeholder"><van-icon name="photo-o" size="20" color="var(--text-tertiary)" /></div>
+                </template>
+                <template #error>
+                  <div class="related-image-placeholder"><van-icon name="photo-fail-o" size="20" color="var(--text-tertiary)" /></div>
+                </template>
+              </van-image>
             </div>
-            <div class="related-title">{{ item.title }}</div>
+            <div class="related-title ellipsis-2">{{ item.title }}</div>
           </div>
         </div>
       </div>
     </div>
-    
-    <van-empty v-else description="加载中..." />
+
+    <van-empty v-else :description="$t('newsDetail.loadFailed')">
+      <van-button type="primary" size="small" round @click="reload">{{ $t('common.retry') }}</van-button>
+    </van-empty>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNewsStore } from '../store/modules/news'
 import { useHistoryStore } from '../store/modules/history'
 import { useFavoriteStore } from '../store/modules/favorite'
 import { useUserStore } from '../store/user'
 import { showToast } from 'vant'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,94 +130,148 @@ const newsStore = useNewsStore()
 const historyStore = useHistoryStore()
 const favoriteStore = useFavoriteStore()
 const userStore = useUserStore()
+const { t } = useI18n()
 
-// 获取路由参数中的新闻ID
+const loading = ref(true)
+
 const newsId = computed(() => Number(route.params.id))
 
-// 将内容拆分为段落
 const contentParagraphs = computed(() => {
   if (!newsStore.newsDetail.content) return []
   return newsStore.newsDetail.content.split('\n\n').filter(p => p.trim())
 })
 
-// 返回上一页
-const onClickLeft = () => {
-  router.back()
-}
-
-// 跳转到相关新闻
-const goToRelatedNews = (id) => {
-  router.push(`/news/detail/${id}`)
-}
-
-// 判断当前新闻是否已收藏
 const isFavorite = computed(() => {
   return favoriteStore.isFavorite(newsId.value)
 })
 
-// 切换收藏状态
+const onClickLeft = () => {
+  router.back()
+}
+
+const goToRelatedNews = (id) => {
+  router.push(`/news/detail/${id}`)
+}
+
+const reload = () => {
+  loadDetail()
+}
+
+const formatViews = (views) => {
+  const num = Number(views)
+  if (Number.isNaN(num)) return views
+  if (num >= 10000) {
+    return `${(num / 10000).toFixed(1)}${t('newsItem.tenThousand')}`
+  }
+  return `${num} ${t('newsItem.views')}`
+}
+
 const toggleFavorite = async () => {
-  // 判断用户是否已登录
   if (!userStore.getLoginStatus) {
-    // 未登录则跳转到登录页
     showToast({
-      message: '请先登录后再收藏',
-      position: 'bottom',
+      message: t('newsDetail.loginToFavorite'),
+      position: 'bottom'
     })
     router.push('/login')
     return
   }
-  
-  // 已登录则调用API切换收藏状态
+
   const status = await favoriteStore.toggleFavorite(newsStore.newsDetail)
-  
+
   if (status === true) {
-    showToast({
-      message: '已添加到收藏',
-      position: 'bottom',
-    })
+    showToast({ message: t('newsDetail.addedToFavorite'), position: 'bottom' })
   } else if (status === false) {
-    showToast({
-      message: '已取消收藏',
-      position: 'bottom',
-    })
+    showToast({ message: t('newsDetail.removedFromFavorite'), position: 'bottom' })
   } else {
-    // status为null表示操作失败
-    showToast({
-      message: '操作失败，请稍后重试',
-      position: 'bottom',
-    })
+    showToast({ message: t('newsDetail.favoriteFailed'), position: 'bottom' })
   }
 }
 
-// 组件挂载时获取新闻详情并添加到浏览历史
-onMounted(async () => {
-  await newsStore.getNewsDetail(newsId.value)
-  
-  // 添加到浏览历史
-  if (newsStore.newsDetail.id) {
-    // 先调用API记录浏览历史
-    if (userStore.getLoginStatus) {
-      try {
-        const result = await historyStore.addHistoryApi(newsStore.newsDetail.id);
-        console.log('记录浏览历史API结果:', result);
-      } catch (error) {
-        console.error('记录浏览历史API失败:', error);
-      }
+// 分享
+const shareNews = async () => {
+  const news = newsStore.newsDetail
+  const url = `${window.location.origin}/news/detail/${news.id}`
+  const copyToClipboard = async () => {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url)
+      showToast({ message: t('home.shareSuccess'), position: 'bottom' })
+    } else {
+      showToast({ message: t('home.shareFailed'), position: 'bottom' })
     }
-    
-    // 无论API是否成功，都添加到本地浏览历史
-    // historyStore.addHistory(newsStore.newsDetail);
   }
-  
-  // 加载收藏数据
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: news.title,
+        text: news.description || news.title,
+        url
+      })
+      return
+    }
+    await copyToClipboard()
+  } catch (err) {
+    if (err.name === 'AbortError') return
+    await copyToClipboard().catch(() => showToast({ message: t('home.shareFailed'), position: 'bottom' }))
+  }
+}
+
+// 标题长按复制
+let longPressTimer = null
+
+const copyTitle = async () => {
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(newsStore.newsDetail.title)
+      showToast({ message: t('newsDetail.copySuccess'), position: 'bottom' })
+    } else {
+      showToast({ message: t('newsDetail.copyFailed'), position: 'bottom' })
+    }
+  } catch {
+    showToast({ message: t('newsDetail.copyFailed'), position: 'bottom' })
+  }
+}
+
+const onTitleTouchStart = () => {
+  longPressTimer = setTimeout(() => {
+    copyTitle()
+  }, 500)
+}
+
+const onTitleTouchEnd = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+const onTitleTouchMove = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+const loadDetail = async () => {
+  loading.value = true
+  await newsStore.getNewsDetail(newsId.value)
+  loading.value = false
+
+  if (!newsStore.newsDetail.id) return
+
+  if (userStore.getLoginStatus) {
+    try {
+      await historyStore.addHistoryApi(newsStore.newsDetail.id)
+    } catch {
+      // 历史记录失败不影响阅读
+    }
+  }
+
   favoriteStore.loadFavorites()
-  
-  // 检查文章收藏状态
-  if (userStore.getLoginStatus && newsStore.newsDetail.id) {
+
+  if (userStore.getLoginStatus) {
     const result = await favoriteStore.checkFavoriteStatusApi(newsStore.newsDetail.id)
     if (result.success && !result.isLocal) {
-      // 如果API请求成功且不是本地状态，更新本地收藏状态
       if (result.isFavorite && !favoriteStore.isFavorite(newsStore.newsDetail.id)) {
         favoriteStore.addFavorite(newsStore.newsDetail)
       } else if (!result.isFavorite && favoriteStore.isFavorite(newsStore.newsDetail.id)) {
@@ -167,18 +279,68 @@ onMounted(async () => {
       }
     }
   }
+}
+
+onMounted(loadDetail)
+
+onBeforeUnmount(() => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
 })
 </script>
 
 <style scoped>
 .news-detail {
   padding-top: 46px;
-  background-color: #fff;
+  background-color: var(--bg-base);
   min-height: 100vh;
 }
 
+:deep(.van-nav-bar) {
+  box-shadow: var(--shadow-sm);
+}
+
+/* 骨架屏 */
+.detail-skeleton {
+  padding: 16px;
+}
+
+.skeleton-title {
+  height: 28px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.skeleton-info {
+  height: 16px;
+  width: 60%;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.skeleton-cover {
+  height: 200px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+}
+
+.skeleton-paragraph {
+  height: 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.skeleton-paragraph:last-child {
+  width: 70%;
+}
+
+/* 内容区 */
 .detail-content {
   padding: 16px;
+  background-color: var(--bg-surface);
+  min-height: calc(100vh - 46px);
 }
 
 .title-container {
@@ -186,84 +348,124 @@ onMounted(async () => {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 12px;
+  gap: 12px;
 }
 
 .title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 1.35;
-  color: #0F172A;
+  line-height: 1.45;
+  color: var(--text-primary);
   margin: 0;
   flex: 1;
 }
 
-.favorite-btn {
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
-  margin-left: 10px;
+}
+
+.action-btn {
+  flex-shrink: 0;
   width: 40px;
   height: 40px;
   padding: 0;
-  border-radius: 999px;
-  box-shadow: var(--shadow-float);
-  transition: transform 0.15s ease;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-hover);
+  border: none;
+  color: var(--text-tertiary);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-.favorite-btn:active {
+.action-btn:active {
   transform: scale(0.92);
 }
 
+.share-btn {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
 .favorite-btn.is-favorite {
-  color: #F59E0B;
+  color: var(--color-warning);
+  background-color: var(--color-warning-light);
 }
 
 .info {
   display: flex;
-  font-size: 12px;
-  color: #94A3B8;
-  margin-bottom: 16px;
   align-items: center;
-}
-
-.info span {
-  margin-right: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
 }
 
 .info span:not(:last-child)::after {
   content: '·';
-  margin-left: 6px;
+  margin-left: 4px;
+  color: var(--text-disabled);
 }
 
 .cover {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--bg-hover);
 }
 
-.cover img {
+.cover :deep(.van-image__img) {
+  display: block;
   width: 100%;
-  border-radius: 16px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-hover);
 }
 
 .content {
-  font-size: 16px;
-  line-height: 1.85;
-  color: #334155;
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--text-primary);
 }
 
 .content p {
   margin-bottom: 20px;
-  text-align: justify;
+  text-align: left;
+  text-indent: 2em;
+  letter-spacing: 0.01em;
 }
 
+.content p:first-child {
+  margin-top: 0;
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+/* 相关推荐 */
 .related-news {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 8px solid #F8FAFC;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider-color);
 }
 
 .related-news h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  color: #0F172A;
-  margin: 0 0 16px;
+  color: var(--text-primary);
+  margin: 0 0 14px;
 }
 
 .related-list {
@@ -283,33 +485,46 @@ onMounted(async () => {
   flex-direction: column;
   width: 140px;
   flex-shrink: 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.related-item:active {
+  background-color: var(--bg-hover);
 }
 
 .related-image {
   width: 140px;
   height: 90px;
+  background-color: var(--bg-hover);
 }
 
-.related-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px 12px 0 0;
+.related-image-placeholder {
+  width: 140px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .related-title {
   font-size: 13px;
-  line-height: 1.4;
-  padding: 8px 10px;
-  color: #334155;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.45;
+  padding: 10px;
+  color: var(--text-secondary);
+  min-height: 56px;
+}
+
+/* 空状态 */
+:deep(.van-empty) {
+  padding-top: 80px;
+}
+
+:deep(.van-empty__description) {
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
 }
 </style>

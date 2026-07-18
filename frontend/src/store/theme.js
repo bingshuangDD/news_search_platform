@@ -1,44 +1,46 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
+
+const THEME_STORAGE_KEY = 'theme'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
-    currentTheme: localStorage.getItem('theme') || 'light',
+    currentTheme: localStorage.getItem(THEME_STORAGE_KEY) || 'light',
     themes: {
       light: {
         name: '浅色模式',
         primaryColor: '#4F46E5',
-        backgroundColor: '#F8FAFC',
-        surfaceColor: '#FFFFFF',
-        textColor: '#0F172A',
-        textSecondary: '#64748B',
-        shadowCard: '0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06)'
+        primaryDark: '#3730A3',
+        bgBase: '#F8FAFC',
+        bgSurface: '#FFFFFF',
+        textPrimary: '#0F172A',
+        textSecondary: '#64748B'
       },
       dark: {
         name: '深色模式',
         primaryColor: '#818CF8',
-        backgroundColor: '#0F172A',
-        surfaceColor: '#1E293B',
-        textColor: '#F8FAFC',
-        textSecondary: '#94A3B8',
-        shadowCard: '0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.4)'
+        primaryDark: '#A5B4FC',
+        bgBase: '#0F172A',
+        bgSurface: '#1E293B',
+        textPrimary: '#F8FAFC',
+        textSecondary: '#94A3B8'
       },
       violet: {
         name: '紫罗兰',
         primaryColor: '#7C3AED',
-        backgroundColor: '#FAF5FF',
-        surfaceColor: '#FFFFFF',
-        textColor: '#0F172A',
-        textSecondary: '#64748B',
-        shadowCard: '0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06)'
+        primaryDark: '#6D28D9',
+        bgBase: '#FAF5FF',
+        bgSurface: '#FFFFFF',
+        textPrimary: '#0F172A',
+        textSecondary: '#64748B'
       },
       emerald: {
         name: '森林绿',
         primaryColor: '#059669',
-        backgroundColor: '#F0FDF4',
-        surfaceColor: '#FFFFFF',
-        textColor: '#0F172A',
-        textSecondary: '#64748B',
-        shadowCard: '0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06)'
+        primaryDark: '#047857',
+        bgBase: '#F0FDF4',
+        bgSurface: '#FFFFFF',
+        textPrimary: '#0F172A',
+        textSecondary: '#64748B'
       }
     }
   }),
@@ -46,63 +48,90 @@ export const useThemeStore = defineStore('theme', {
   getters: {
     getCurrentTheme: (state) => state.currentTheme,
     getThemeConfig: (state) => state.themes[state.currentTheme],
-    getAllThemes: (state) => Object.keys(state.themes).map(key => ({
-      id: key,
-      name: state.themes[key].name,
-      primaryColor: state.themes[key].primaryColor
-    }))
+    getAllThemes: (state) =>
+      Object.keys(state.themes).map((key) => ({
+        id: key,
+        name: state.themes[key].name,
+        primaryColor: state.themes[key].primaryColor
+      }))
   },
 
   actions: {
     setTheme(themeName) {
-      if (this.themes[themeName]) {
-        this.currentTheme = themeName;
-        localStorage.setItem('theme', themeName);
-        this.applyTheme();
-      }
+      if (!this.themes[themeName]) return
+      this.currentTheme = themeName
+      localStorage.setItem(THEME_STORAGE_KEY, themeName)
+      this.applyTheme()
     },
 
     applyTheme() {
-      const theme = this.themes[this.currentTheme];
-      const root = document.documentElement;
+      const root = document.documentElement
+      const theme = this.themes[this.currentTheme]
+      const isDark = this.currentTheme === 'dark'
 
-      // 设置 data-theme 属性用于 CSS 选择器
-      root.setAttribute('data-theme', this.currentTheme);
+      // 设置 data-theme 属性
+      root.setAttribute('data-theme', this.currentTheme)
 
-      // 主题 class（用于 body.theme-dark 等全局覆盖）
-      document.body.className = '';
-      if (this.currentTheme !== 'light') {
-        document.body.classList.add(`theme-${this.currentTheme}`);
+      // 切换 body class，保留其他可能的 class
+      document.body.classList.remove('theme-dark')
+      if (isDark) {
+        document.body.classList.add('theme-dark')
       }
 
-      // 批量注入 CSS 自定义属性
+      // 计算衍生色
+      const primary = theme.primaryColor
+      const primaryDark = theme.primaryDark
+      const primaryLight = isDark ? `${primary}26` : `${primary}15`
+      const primarySoft = isDark ? `${primary}4D` : `${primary}26`
+
+      // 根据主题设置核心变量
+      this.applyColorScheme(
+        theme.bgBase,
+        theme.bgSurface,
+        theme.textPrimary,
+        theme.textSecondary
+      )
+
+      // 覆盖 Vant 变量和自定义强调变量
       const vars = {
-        '--primary-color': theme.primaryColor,
-        '--background-color': theme.backgroundColor,
-        '--surface-color': theme.surfaceColor,
-        '--text-color': theme.textColor,
-        '--text-color-light': theme.textSecondary,
-        '--shadow-card': theme.shadowCard,
-        '--van-primary-color': theme.primaryColor,
-        '--van-background': theme.backgroundColor,
-        '--van-background-2': theme.surfaceColor,
-        '--van-text-color': theme.textColor,
-        '--van-text-color-2': theme.textSecondary,
-        '--van-nav-bar-background': theme.surfaceColor,
-        '--van-nav-bar-title-text-color': theme.textColor,
-        '--van-tab-active-text-color': theme.primaryColor,
-        '--van-tabs-bottom-bar-color': theme.primaryColor,
-        '--van-button-primary-background': theme.primaryColor,
-        '--van-button-primary-border-color': theme.primaryColor,
-      };
+        '--primary': primary,
+        '--primary-dark': primaryDark,
+        '--primary-light': primaryLight,
+        '--primary-soft': primarySoft,
+        '--van-primary-color': primary,
+        '--van-tab-active-text-color': primary,
+        '--van-tabs-bottom-bar-color': primary,
+        '--van-button-primary-background': primary,
+        '--van-button-primary-border-color': primary
+      }
 
       Object.entries(vars).forEach(([key, value]) => {
-        root.style.setProperty(key, value);
-      });
+        root.style.setProperty(key, value)
+      })
+    },
+
+    applyColorScheme(bgBase, bgSurface, textPrimary, textSecondary) {
+      const root = document.documentElement
+      const vars = {
+        '--bg-base': bgBase,
+        '--bg-surface': bgSurface,
+        '--text-primary': textPrimary,
+        '--text-secondary': textSecondary,
+        '--van-background': bgBase,
+        '--van-background-2': bgSurface,
+        '--van-text-color': textPrimary,
+        '--van-text-color-2': textSecondary,
+        '--van-nav-bar-background': bgSurface,
+        '--van-nav-bar-title-text-color': textPrimary,
+        '--van-cell-group-background': bgSurface
+      }
+      Object.entries(vars).forEach(([key, value]) => {
+        root.style.setProperty(key, value)
+      })
     },
 
     initTheme() {
-      this.applyTheme();
+      this.applyTheme()
     }
   }
-});
+})

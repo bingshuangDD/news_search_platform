@@ -12,12 +12,39 @@ export default {
     login: 'Login',
     register: 'Register',
     logout: 'Logout',
-    allCategories: 'All Categories'
+    allCategories: 'All Categories',
+    retry: 'Retry',
+    saveFailed: 'Save failed, please retry',
+    deleteFailed: 'Delete failed, please retry'
   },
   nav: {
     home: 'Home',
     aiChat: 'AI Chat',
-    my: 'My'
+    my: 'My',
+    newsDetail: 'News Detail'
+  },
+  newsDetail: {
+    related: 'Related News',
+    loadFailed: 'Failed to load, please retry',
+    loginToFavorite: 'Please login to favorite',
+    addedToFavorite: 'Added to favorites',
+    removedFromFavorite: 'Removed from favorites',
+    favoriteFailed: 'Operation failed, please retry',
+    copySuccess: 'Title copied',
+    copyFailed: 'Copy failed'
+  },
+  newsItem: {
+    views: 'views',
+    tenThousand: 'k'
+  },
+  appEmpty: {
+    noData: 'No data'
+  },
+  theme: {
+    light: 'Light',
+    dark: 'Dark',
+    violet: 'Violet',
+    emerald: 'Emerald'
   },
   home: {
     title: 'News',
@@ -25,6 +52,12 @@ export default {
     refresh: 'Refresh',
     loadMore: 'Load More',
     noMore: 'No More',
+    favorite: 'Favorite',
+    cancelFavorite: 'Unfavorite',
+    share: 'Share',
+    shareSuccess: 'Link copied',
+    shareFailed: 'Share failed',
+    swipeActions: 'Quick actions',
     categories: {
       headline: 'Headlines',
       society: 'Society',
@@ -43,11 +76,36 @@ export default {
     placeholder: 'Enter your question...',
     send: 'Send',
     thinking: 'AI is thinking...',
-    // 以下为 RAG 新增
     ragMode: 'News Q&A',
     freeMode: 'Free Chat',
     ragWelcome: 'Hello! I\'m a news Q&A assistant. Ask me anything about the news on this site!',
     freeWelcome: 'Hello! I\'m an AI assistant. How can I help you?',
+    error: 'Error: {message}',
+    networkError: 'Please check your network and API settings',
+    emptyResponse: 'Sorry, I couldn\'t generate a response. Please check your API settings or try again later.'
+  },
+  favorite: {
+    title: 'My Favorites',
+    clear: 'Clear',
+    empty: 'No favorites yet',
+    goHome: 'Browse News',
+    confirmDelete: 'Delete this favorite?',
+    confirmClear: 'Clear all favorites?',
+    favoriteAt: 'Favorited at',
+    clearFailed: 'Failed to clear, please retry',
+    delete: 'Delete'
+  },
+  history: {
+    title: 'Browsing History',
+    clear: 'Clear',
+    empty: 'No browsing history',
+    goHome: 'Browse News',
+    confirmDelete: 'Delete this history record?',
+    confirmClear: 'Clear all browsing history?',
+    viewAt: 'Viewed at',
+    deleteFailed: 'Failed to delete, please retry',
+    clearFailed: 'Failed to clear, please retry',
+    delete: 'Delete'
   },
   my: {
     title: 'My',
@@ -73,12 +131,74 @@ export default {
     selectTheme: 'Select Theme',
     themeChanged: 'Theme changed',
     languageChanged: 'Language changed, some changes will take effect after restarting the app',
-    selectLanguage: 'Select Language'
+    selectLanguage: 'Select Language',
+    languages: {
+      zhCN: '简体中文',
+      enUS: 'English'
+    }
   },
   profile: {
     title: 'Profile',
+    avatar: 'Avatar',
     username: 'Username',
+    userId: 'User ID',
     bio: 'Bio',
-    save: 'Save Changes'
+    bioEmpty: 'No bio yet',
+    editBio: 'Edit Bio',
+    bioPlaceholder: 'Tell us about yourself',
+    bioRequired: 'Please enter your bio',
+    save: 'Save Changes',
+    changePassword: 'Change Password',
+    oldPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm',
+    oldPasswordPlaceholder: 'Enter current password',
+    newPasswordPlaceholder: 'Enter new password',
+    confirmPasswordPlaceholder: 'Confirm new password',
+    oldPasswordRequired: 'Please enter current password',
+    newPasswordRequired: 'Please enter new password',
+    confirmPasswordRequired: 'Please confirm new password',
+    passwordMismatch: 'Passwords do not match',
+    loadFailed: 'Failed to load user info',
+    bioUpdateSuccess: 'Bio updated',
+    bioUpdateFailed: 'Failed to update bio',
+    passwordUpdateSuccess: 'Password updated',
+    passwordUpdateFailed: 'Failed to update password'
+  },
+  login: {
+    title: 'Login',
+    slogan: 'Stay informed, anytime',
+    username: 'Username',
+    password: 'Password',
+    usernamePlaceholder: 'Enter username',
+    passwordPlaceholder: 'Enter password',
+    usernameRequired: 'Username is required',
+    passwordRequired: 'Password is required',
+    submit: 'Login',
+    demoAccount: 'Demo account',
+    demoPassword: 'Demo password',
+    noAccount: 'No account?',
+    goRegister: 'Register',
+    loggingIn: 'Logging in...',
+    failed: 'Login failed, please retry'
+  },
+  register: {
+    title: 'Register',
+    slogan: 'Create an account to get started',
+    username: 'Username',
+    password: 'Password',
+    confirmPassword: 'Confirm',
+    usernamePlaceholder: 'Enter username',
+    passwordPlaceholder: 'Enter password',
+    confirmPasswordPlaceholder: 'Confirm password',
+    usernameRequired: 'Username is required',
+    passwordRequired: 'Password is required',
+    confirmPasswordRequired: 'Please confirm password',
+    passwordMismatch: 'Passwords do not match',
+    submit: 'Register',
+    hasAccount: 'Already have an account?',
+    goLogin: 'Login',
+    registering: 'Registering...',
+    failed: 'Register failed, please retry'
   }
-};
+}

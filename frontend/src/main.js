@@ -4,16 +4,16 @@ import router from './router'
 import pinia from './store'
 
 // 导入Vant组件库
-import { 
-  Button, 
-  NavBar, 
-  Tabbar, 
-  TabbarItem, 
-  Tab, 
-  Tabs, 
-  List, 
-  PullRefresh, 
-  Cell, 
+import {
+  Button,
+  NavBar,
+  Tabbar,
+  TabbarItem,
+  Tab,
+  Tabs,
+  List,
+  PullRefresh,
+  Cell,
   CellGroup,
   Grid,
   GridItem,
@@ -23,7 +23,11 @@ import {
   Image,
   Toast,
   Icon,
-  Popup
+  Popup,
+  SwipeCell,
+  Radio,
+  RadioGroup,
+  Lazyload
 } from 'vant'
 
 // 导入Vant样式
@@ -61,14 +65,18 @@ app.use(Image)
 app.use(Toast)
 app.use(Icon)
 app.use(Popup)
+app.use(SwipeCell)
+app.use(Radio)
+app.use(RadioGroup)
+app.use(Lazyload)
 
 // 使用路由和状态管理
 app.use(router)
 app.use(pinia)
 
-app.mount('#app')
-
-// 初始化主题
+// 初始化主题（在 mount 之前，避免闪烁）
 import { useThemeStore } from './store/theme'
 const themeStore = useThemeStore()
 themeStore.initTheme()
+
+app.mount('#app')

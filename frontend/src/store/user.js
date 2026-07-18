@@ -48,7 +48,7 @@ export const useUserStore = defineStore('user', {
           };
         }
       } catch (error) {
-        console.error('登录请求失败:', error);
+        
         return {
           success: false,
           message: error.response?.data?.message || '登录请求失败，请稍后再试'
@@ -86,7 +86,7 @@ export const useUserStore = defineStore('user', {
           };
         }
       } catch (error) {
-        console.error('注册请求失败:', error);
+        
         return {
           success: false,
           message: error.response?.data?.message || '注册请求失败，请稍后再试'
@@ -136,7 +136,7 @@ export const useUserStore = defineStore('user', {
           };
         }
       } catch (error) {
-        console.error('获取用户信息请求失败:', error);
+        
         return {
           success: false,
           message: error.response?.data?.message || '获取用户信息请求失败，请稍后再试'
@@ -181,7 +181,7 @@ export const useUserStore = defineStore('user', {
           };
         }
       } catch (error) {
-        console.error('更新个人简介请求失败:', error);
+        
         return {
           success: false,
           message: error.response?.data?.message || '更新个人简介请求失败，请稍后再试'
@@ -226,7 +226,7 @@ export const useUserStore = defineStore('user', {
           };
         }
       } catch (error) {
-        console.error('修改密码请求失败:', error);
+        
         return {
           success: false,
           message: error.response?.data?.message || '修改密码请求失败，请稍后再试'

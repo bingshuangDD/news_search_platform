@@ -1,5 +1,5 @@
 <template>
-  <van-tabbar v-model="active" route>
+  <van-tabbar route active-color="var(--primary)" inactive-color="var(--text-tertiary)">
     <van-tabbar-item to="/home" icon="home-o">{{ $t('nav.home') }}</van-tabbar-item>
     <van-tabbar-item to="/aichat" icon="chat-o">{{ $t('nav.aiChat') }}</van-tabbar-item>
     <van-tabbar-item to="/my" icon="user-o">{{ $t('nav.my') }}</van-tabbar-item>
@@ -7,28 +7,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const active = ref(0)
-
-// 根据当前路由路径设置激活的标签
-const setActiveTab = () => {
-  const path = route.path
-  if (path.includes('/home')) {
-    active.value = 0
-  } else if (path.includes('/aichat')) {
-    active.value = 1
-  } else if (path.includes('/my')) {
-    active.value = 2
-  }
-}
-
-// 初始化时设置激活标签
-setActiveTab()
+// TabBar 完全由 Vant 的 route 模式驱动，无需手动管理 active 状态
 </script>
 
 <style scoped>
-/* 自定义样式可以在这里添加 */
+:deep(.van-tabbar) {
+  background-color: var(--bg-surface);
+  box-shadow: 0 -1px 0 var(--border-color);
+  border-top: none;
+}
+
+:deep(.van-tabbar-item__icon) {
+  font-size: 22px;
+}
+
+:deep(.van-tabbar-item__text) {
+  font-size: 11px;
+}
 </style>

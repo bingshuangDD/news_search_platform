@@ -38,7 +38,7 @@ export const useHistoryStore = defineStore('history', {
           return { success: false, message: response.data.message || '添加浏览历史失败' };
         }
       } catch (error) {
-        console.error('添加浏览历史请求失败:', error);
+        
         return { success: false, message: '网络请求失败' };
       }
     },
@@ -80,13 +80,13 @@ export const useHistoryStore = defineStore('history', {
       
       // 检查用户是否登录
       if (!userStore.getLoginStatus) {
-        console.log('清空浏览历史API：用户未登录，使用本地操作');
+        
         this.clearHistory();
         return { success: true, isLocal: true };
       }
       
       try {
-        console.log('清空浏览历史API：开始请求');
+        
         const response = await axios.delete(`${apiConfig.baseURL}/api/history/clear`, { 
           headers: { 
             Authorization: userStore.token 
@@ -94,16 +94,16 @@ export const useHistoryStore = defineStore('history', {
         });
         
         if (response.data.code === 200) {
-          console.log('清空浏览历史API：清空成功');
+          
           // 更新本地历史记录
           this.clearHistory();
           return { success: true };
         } else {
-          console.error('清空浏览历史API：请求失败', response.data.message);
+          
           return { success: false, message: response.data.message || '清空浏览历史失败' };
         }
       } catch (error) {
-        console.error('清空浏览历史API：请求异常', error);
+        
         return { success: false, message: '网络请求失败' };
       }
     },
@@ -120,13 +120,13 @@ export const useHistoryStore = defineStore('history', {
       
       // 检查用户是否登录
       if (!userStore.getLoginStatus) {
-        console.log('删除浏览历史API：用户未登录，使用本地操作');
+        
         this.removeHistory(id);
         return { success: true, isLocal: true };
       }
       
       try {
-        console.log('删除浏览历史API：开始请求', id);
+        
         const response = await axios.delete(`${apiConfig.baseURL}/api/history/delete/${id}`, { 
           headers: { 
             Authorization: userStore.token 
@@ -134,16 +134,16 @@ export const useHistoryStore = defineStore('history', {
         });
         
         if (response.data.code === 200) {
-          console.log('删除浏览历史API：删除成功');
+          
           // 更新本地历史记录
           this.removeHistory(id);
           return { success: true };
         } else {
-          console.error('删除浏览历史API：请求失败', response.data.message);
+          
           return { success: false, message: response.data.message || '删除浏览历史失败' };
         }
       } catch (error) {
-        console.error('删除浏览历史API：请求异常', error);
+        
         return { success: false, message: '网络请求失败' };
       }
     },
@@ -167,12 +167,12 @@ export const useHistoryStore = defineStore('history', {
       
       // 检查用户是否登录
       if (!userStore.getLoginStatus) {
-        console.log('获取浏览历史API：用户未登录，使用本地数据');
+        
         return { success: false, message: '请先登录', isLocal: true };
       }
       
       try {
-        console.log('获取浏览历史API：开始请求');
+        
         const response = await axios.get(`${apiConfig.baseURL}/api/history/list`, { 
           headers: { 
             Authorization: userStore.token 
@@ -182,18 +182,18 @@ export const useHistoryStore = defineStore('history', {
         if (response.data.code === 200) {
           // 正确获取list数组
           const historyList = response.data.data.list || [];
-          // console.log(`获取浏览历史API：成功获取${historyList.length}条记录`, response.data.data);
+          // 
           // 更新本地历史记录
           this.history = historyList;
           // 保存到本地存储
           this.saveHistory();
           return { success: true, data: historyList };
         } else {
-          // console.error('获取浏览历史API：请求失败', response.data.message);
+          // 
           return { success: false, message: response.data.message || '获取浏览历史失败' };
         }
       } catch (error) {
-        // console.error('获取浏览历史API：请求异常', error);
+        // 
         return { success: false, message: '网络请求失败' };
       }
     },

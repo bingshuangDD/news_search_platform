@@ -1,25 +1,24 @@
 <template>
   <div class="category">
-    <van-nav-bar 
-      :title="$t('common.allCategories')" 
-      :left-text="$t('common.back')"
+    <van-nav-bar
+      :title="$t('common.allCategories')"
       left-arrow
       @click-left="onClickLeft"
-      fixed 
+      fixed
     />
-    
+
     <div class="category-container">
       <van-grid :column-num="3" :border="false">
-        <van-grid-item 
-          v-for="category in displayCategories" 
+        <van-grid-item
+          v-for="category in displayCategories"
           :key="category.id"
           :text="getCategoryTranslation(category.name)"
-          icon="newspaper-o"
+          :icon="getCategoryIcon(category.name)"
           @click="goToCategoryNews(category.id)"
         />
       </van-grid>
     </div>
-    
+
     <tab-bar />
   </div>
 </template>
@@ -35,29 +34,22 @@ const newsStore = useNewsStore()
 const router = useRouter()
 const { t } = useI18n()
 
-// 计算属性：显示的分类（只显示非"更多"分类）
 const displayCategories = computed(() => {
-  return newsStore.categories.filter(category => category.name !== '更多');
+  return newsStore.categories.filter((category) => category.name !== '更多')
 })
 
-// 返回上一页
 const onClickLeft = () => {
   router.back()
 }
 
-// 跳转到对应分类的新闻列表
 const goToCategoryNews = (categoryId) => {
-  // 先切换分类
   newsStore.changeCategory(categoryId)
-  
-  // 使用路由参数传递分类ID
   router.push({
     path: '/home',
     query: { categoryId: categoryId }
   })
 }
 
-// 获取分类名称的翻译
 const getCategoryTranslation = (categoryName) => {
   const categoryMap = {
     '头条': 'headline',
@@ -70,10 +62,25 @@ const getCategoryTranslation = (categoryName) => {
     '科技': 'technology',
     '财经': 'finance',
     '更多': 'more'
-  };
-  
-  const key = categoryMap[categoryName];
-  return key ? t(`home.categories.${key}`) : categoryName;
+  }
+
+  const key = categoryMap[categoryName]
+  return key ? t(`home.categories.${key}`) : categoryName
+}
+
+const getCategoryIcon = (categoryName) => {
+  const iconMap = {
+    '头条': 'fire-o',
+    '社会': 'friends-o',
+    '国内': 'home-o',
+    '国际': 'global-o',
+    '娱乐': 'smile-o',
+    '体育': 'chart-o',
+    '军事': 'shield-o',
+    '科技': 'desktop-o',
+    '财经': 'balance-o'
+  }
+  return iconMap[categoryName] || 'newspaper-o'
 }
 </script>
 
@@ -81,44 +88,48 @@ const getCategoryTranslation = (categoryName) => {
 .category {
   padding-top: 46px;
   padding-bottom: 50px;
-  background-color: var(--background-color);
+  background-color: var(--bg-base);
   min-height: 100vh;
+}
+
+:deep(.van-nav-bar) {
+  box-shadow: var(--shadow-sm);
 }
 
 .category-container {
   padding: 16px 12px;
 }
 
-/* ===== 网格卡片 ===== */
-.category-container :deep(.van-grid) {
+:deep(.van-grid) {
   gap: 12px;
 }
 
-.category-container :deep(.van-grid-item) {
+:deep(.van-grid-item) {
   margin-bottom: 4px;
 }
 
-.category-container :deep(.van-grid-item__content) {
-  background-color: #fff;
-  border-radius: 16px;
+:deep(.van-grid-item__content) {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
   padding: 24px 12px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-.category-container :deep(.van-grid-item__content:active) {
+:deep(.van-grid-item__content:active) {
   transform: scale(0.96);
-  box-shadow: var(--shadow-float);
+  background-color: var(--bg-hover);
 }
 
-.category-container :deep(.van-grid-item__icon) {
+:deep(.van-grid-item__icon) {
   font-size: 32px;
-  color: #4F46E5;
+  color: var(--primary);
 }
 
-.category-container :deep(.van-grid-item__text) {
-  margin-top: 8px;
-  color: #334155;
+:deep(.van-grid-item__text) {
+  margin-top: 10px;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
 }
